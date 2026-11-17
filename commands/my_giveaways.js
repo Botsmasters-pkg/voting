@@ -37,8 +37,10 @@ for (var gid in all_giveaways) {
 
   if ((is_creator || is_owner) && is_active) {
     var ch_disp = g.channel_display || g.channel || gid;
+    var p_title = g.title || g.prize || "";
+    var label = "📢 " + ch_disp + (p_title ? (" • " + (p_title.length > 15 ? (p_title.substring(0, 13) + "..") : p_title)) : "");
     buttons.push([
-      { text: "📢 " + ch_disp, callback_data: "manage_giveaway " + gid, style: "primary" }
+      { text: label, callback_data: "manage_giveaway " + gid, style: "primary" }
     ]);
   }
 }

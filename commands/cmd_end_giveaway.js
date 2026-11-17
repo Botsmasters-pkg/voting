@@ -132,8 +132,11 @@ all_giveaways[gid] = giveaway;
 Bot.setProperty("all_giveaways", all_giveaways, "json");
 
 // Send announcement to channel
+var prize_title = giveaway.title || giveaway.prize || "";
+var title_line = prize_title ? ("🎯 <b>Contest:</b> " + prize_title + "\n") : "";
+
 if (giveaway.channel) {
-  var channel_msg = "<b>💰 GIVEAWAY ENDED!</b>\n\n" + winner_text;
+  var channel_msg = "<b>💰 GIVEAWAY ENDED!</b>\n\n" + title_line + winner_text;
   Api.sendMessage({
     chat_id: giveaway.channel,
     text: channel_msg,
@@ -142,7 +145,7 @@ if (giveaway.channel) {
 }
 
 // Edit private chat message
-var end_text = "✅ <b>Ended!</b>\n\n" + winner_text;
+var end_text = "✅ <b>Ended!</b>\n\n" + title_line + winner_text;
 var end_buttons = [
   [{ text: "BACK", callback_data: "my_giveaways", style: "primary" }]
 ];

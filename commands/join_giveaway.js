@@ -160,9 +160,11 @@ var ch_url = ch_raw.indexOf("@") === 0 ? ("https://t.me/" + ch_raw.replace("@", 
 
 var count = Object.keys(giveaway.users).length;
 
+var prize_line = (giveaway.title || giveaway.prize) ? ("🏆 <b>Prize:</b> " + (giveaway.title || giveaway.prize) + "\n") : "";
 var landing_text = 
   "<b>🎁 EXCLUSIVE GIVEAWAY</b>\n\n" +
   "<b>Hosted By:</b> " + ch_disp + "\n" +
+  prize_line +
   "<b>Participants:</b> " + count + "\n\n" +
   "<b>✅ You are eligible!</b>";
 

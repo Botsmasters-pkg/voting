@@ -76,10 +76,12 @@ if (giveaway.users && typeof giveaway.users === "object") {
   joined_count = giveaway.participants.length;
 }
 
+var prize_info = giveaway.title || giveaway.prize || "";
 var text = 
   "<b>➡️ MANAGEMENT PANEL</b>\n\n" +
   "<b>Status:</b> " + status + "\n" +
   "<b>Channel:</b> " + ch_display + "\n" +
+  (prize_info ? ("🏆 <b>Prize:</b> " + prize_info + "\n") : "") +
   "<b>Joined:</b> " + joined_count;
 
 var buttons = [
