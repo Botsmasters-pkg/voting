@@ -1,6 +1,6 @@
 /*CMD
   command: step_giveaway_channel
-  help: Process channel identifier input with primary styled cancel button
+  help: Process channel identifier input with auto-detection and live chat verification
   need_reply: true
 CMD*/
 
@@ -15,12 +15,23 @@ if (message === "/start" || message.toLowerCase() === "cancel") {
   return;
 }
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 var channel_input = message.trim();
 User.setProperty("temp_giveaway_channel", channel_input, "string");
 
-// Immediately auto-register channel into connected_channels
-var channels = Bot.getProperty("connected_channels", {});
+// Immediately auto-register channel into connected_channels safely
+var channels = getPropJson("connected_channels", {});
 var ch_key = String(channel_input);
+
 if (!channels[ch_key]) {
   channels[ch_key] = {
     id: ch_key,
@@ -34,7 +45,7 @@ if (!channels[ch_key]) {
   Bot.setProperty("connected_channels", channels, "json");
 }
 
-// Fetch live Telegram chat details to get numeric ID and title
+// Fetch live Telegram chat details to get numeric ID, title and notify owner
 Api.getChat({
   chat_id: channel_input,
   on_result: "on_channel_chat_info"

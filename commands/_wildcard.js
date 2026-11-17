@@ -6,6 +6,16 @@ CMD*/
 
 var OWNER_ID = 8710308658;
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 // Automatically detect & cache bot username from token if not yet cached
 if (!Bot.getProperty("bot_username")) {
   Api.getMe({
@@ -21,7 +31,7 @@ if (request && request.my_chat_member) {
   var chat = mcm.chat || {};
   var from = mcm.from || {};
   var chat_key = String(chat.id);
-  var channels = Bot.getProperty("connected_channels", {});
+  var channels = getPropJson("connected_channels", {});
 
   // Bot ADDED as Admin or Member
   if (new_status === "administrator" || new_status === "creator" || new_status === "member") {
@@ -94,7 +104,7 @@ if (request && request.my_chat_member) {
 if (request && request.channel_post && request.channel_post.chat) {
   var cp_chat = request.channel_post.chat;
   var cp_key = String(cp_chat.id);
-  var cp_channels = Bot.getProperty("connected_channels", {});
+  var cp_channels = getPropJson("connected_channels", {});
   if (!cp_channels[cp_key]) {
     var cp_obj = {
       id: cp_key,

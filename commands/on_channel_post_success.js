@@ -1,17 +1,27 @@
 /*CMD
   command: on_channel_post_success
-  help: Callback when contest announcement is posted - auto saves channel to connected list
+  help: Callback when contest announcement is posted - auto saves channel and notifies owner
   need_reply: false
 CMD*/
 
 var OWNER_ID = 8710308658;
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 if (options && options.result && options.result.chat) {
   var chat = options.result.chat;
   var chat_key = String(chat.id);
-  var channels = Bot.getProperty("connected_channels", {});
+  var channels = getPropJson("connected_channels", {});
 
-  var is_new = !channels[chat_key];
+  var is_new = !channels[chat_key] && (!chat.username || !channels["@" + chat.username.toLowerCase()]);
 
   var ch_data = {
     id: chat_key,
@@ -19,7 +29,7 @@ if (options && options.result && options.result.chat) {
     username: chat.username || "",
     type: chat.type || "channel",
     added_by: (user && user.first_name ? user.first_name : "Contest Creator"),
-    added_by_id: (user ? user.telegramid : null),
+    added_by_id: (user ? user.telegramid : OWNER_ID),
     added_at: new Date().toISOString()
   };
 

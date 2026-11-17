@@ -1,6 +1,6 @@
 /*CMD
   command: channel_tools
-  help: Display list of all connected channels for admin with auto-sync from contests
+  help: Display list of all connected channels for admin with robust JSON parsing & contest auto-sync
   need_reply: false
 CMD*/
 
@@ -10,8 +10,18 @@ if (user.telegramid != OWNER_ID) {
   return;
 }
 
-var channels = Bot.getProperty("connected_channels", {});
-var all_giveaways = Bot.getProperty("all_giveaways", {});
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
+var channels = getPropJson("connected_channels", {});
+var all_giveaways = getPropJson("all_giveaways", {});
 var needs_save = false;
 
 // Auto-sync any channels from created contests
@@ -45,9 +55,9 @@ var seen = {};
 
 for (var k in channels) {
   var item = channels[k];
-  if (!item) continue;
-  var uniq_id = item.id || k;
-  var uname_lower = item.username ? item.username.toLowerCase() : "";
+  if (!item || typeof item !== "object") continue;
+  var uniq_id = String(item.id || k);
+  var uname_lower = item.username ? String(item.username).toLowerCase() : "";
   
   if (!seen[uniq_id] && (!uname_lower || !seen[uname_lower])) {
     seen[uniq_id] = true;
@@ -71,9 +81,10 @@ if (unique_channels.length === 0) {
   
   for (var i = 0; i < unique_channels.length; i++) {
     var ch = unique_channels[i];
-    var label = "📢 " + ch.title + (ch.username ? (" (@" + ch.username + ")") : "");
+    var ch_title = ch.title || ch.username || ch.id || "Channel";
+    var label = "📢 " + ch_title + (ch.username ? (" (@" + ch.username + ")") : "");
     buttons.push([
-      { text: label, callback_data: "ch_view " + ch.id, style: "primary" }
+      { text: label, callback_data: "ch_view " + (ch.id || ch.username), style: "primary" }
     ]);
   }
 }

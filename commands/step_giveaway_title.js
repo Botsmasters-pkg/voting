@@ -15,6 +15,16 @@ if (message === "/start" || message.toLowerCase() === "cancel") {
   return;
 }
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 var channel_target = User.getProperty("temp_giveaway_channel");
 if (!channel_target) {
   Bot.sendMessage("⚠️ Koi channel select nahi mila. Shuru se shuru karein.");
@@ -29,7 +39,7 @@ var OWNER_ID = 8710308658;
 // Dynamic Bot Username detected from token
 var BOT_USERNAME = Bot.getProperty("bot_username");
 if (!BOT_USERNAME) {
-  var bInfo = Bot.getProperty("bot_info");
+  var bInfo = getPropJson("bot_info", null);
   if (bInfo) {
     if (bInfo.result && bInfo.result.username) BOT_USERNAME = bInfo.result.username.replace("@", "");
     else if (bInfo.username) BOT_USERNAME = bInfo.username.replace("@", "");
@@ -40,7 +50,7 @@ if (!BOT_USERNAME) {
 }
 
 // Auto-register channel into connected_channels
-var channels = Bot.getProperty("connected_channels", {});
+var channels = getPropJson("connected_channels", {});
 var ch_key = String(channel_target);
 if (!channels[ch_key]) {
   channels[ch_key] = {
@@ -69,7 +79,7 @@ var giveaway = {
   voted_users: {}
 };
 
-var all_giveaways = Bot.getProperty("all_giveaways", {});
+var all_giveaways = getPropJson("all_giveaways", {});
 all_giveaways[gid] = giveaway;
 Bot.setProperty("all_giveaways", all_giveaways, "json");
 

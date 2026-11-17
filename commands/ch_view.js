@@ -10,6 +10,16 @@ if (user.telegramid != OWNER_ID) {
   return;
 }
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 var target_chid = (params || User.getProperty("active_channel") || "").trim();
 if (!target_chid) {
   Bot.runCommand("channel_tools");
@@ -17,12 +27,29 @@ if (!target_chid) {
 }
 
 User.setProperty("active_channel", target_chid, "string");
-var channels = Bot.getProperty("connected_channels", {});
+var channels = getPropJson("connected_channels", {});
 var ch_info = channels[target_chid] || {};
 
-var title = ch_info.title || "Selected Channel";
-var uname = ch_info.username ? ("@" + ch_info.username) : "Private Channel";
-var added_by = ch_info.added_by ? (ch_info.added_by + " (ID: " + ch_info.added_by_id + ")") : "Admin";
+// If numeric chat ID missing, try to find in channels or query Telegram
+if (!ch_info.id || ch_info.id.startsWith("@")) {
+  for (var k in channels) {
+    if (channels[k] && channels[k].username && ("@" + channels[k].username.toLowerCase()) === target_chid.toLowerCase()) {
+      ch_info = channels[k];
+      target_chid = ch_info.id;
+      break;
+    }
+  }
+}
+
+// Fetch live Telegram chat info to keep details fresh
+Api.getChat({
+  chat_id: target_chid,
+  on_result: "on_channel_chat_info"
+});
+
+var title = ch_info.title || target_chid;
+var uname = ch_info.username ? ("@" + ch_info.username) : (target_chid.startsWith("@") ? target_chid : "Private Channel");
+var added_by = ch_info.added_by ? (ch_info.added_by + (ch_info.added_by_id ? (" (ID: " + ch_info.added_by_id + ")") : "")) : "Admin";
 
 var text = 
   "🎛 <b>CHANNEL MANAGEMENT PANEL</b> 🎛\n\n" +
