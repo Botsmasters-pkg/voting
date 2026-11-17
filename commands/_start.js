@@ -46,14 +46,15 @@ if (all_users.indexOf(uid) === -1) {
 }
 
 if (params) {
-  if (params.indexOf("join_") === 0) {
-    var gid = params.replace("join_", "");
-    Bot.run({
-      command: "join_giveaway",
-      options: { giveaway_id: gid }
-    });
-    return;
+  var param_str = params.trim();
+  if (param_str.indexOf("join_") === 0) {
+    param_str = param_str.replace("join_", "");
   }
+  Bot.run({
+    command: "join_giveaway",
+    options: { giveaway_id: param_str }
+  });
+  return;
 }
 
 var welcome_text = 

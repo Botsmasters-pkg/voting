@@ -1,27 +1,34 @@
 /*CMD
   command: how_it_works
-  help: Explains bot usage guide
+  help: Guide on how the bot works exactly matching Python bot
   need_reply: false
 CMD*/
 
 var text = 
-  "ℹ️ <b>HOW TOXIC VOTING BOT WORKS:</b>\n\n" +
-  "<b>1️⃣ Step 1: Bot ko Channel me Admin banayein</b>\n" +
-  "• Bot ko apne Telegram Channel me add karein aur <i>Post Messages</i> & <i>Edit Messages</i> ki permission dein.\n\n" +
-  "<b>2️⃣ Step 2: Contest Create karein</b>\n" +
-  "• Bot me <b>CREATE</b> button dabayein.\n" +
-  "• Channel username aur Contest ka Title/Prize enter karein.\n\n" +
-  "<b>3️⃣ Step 3: Participants Join karenge</b>\n" +
-  "• Channel me Contest announcement post ho jayegi.\n" +
-  "• Users <b>🎯 Join Contest</b> par click karke participate karenge.\n\n" +
-  "<b>4️⃣ Step 4: Voting Shuru!</b>\n" +
-  "• Har participant ka voting card automatically channel me post ho jata hai.\n" +
-  "• Voters <b>🗳 Vote</b> button daba kar vote karenge.\n" +
-  "• Bot ensure karta hai ki ek user ek hi vote de sake!";
+  "<b>📖 HOW THIS BOT WORKS</b>\n\n" +
+  "<b>🎁 CREATE GIVEAWAY</b>\n" +
+  "• Channel/group ka username ya ID do\n" +
+  "• Bot admin hona chahiye us channel mein\n" +
+  "• Unique link generate hoga\n\n" +
+  "<b>🎯 JOIN GIVEAWAY</b>\n" +
+  "• Link open karo → JOIN CHANNEL karo\n" +
+  "• Phir JOIN GIVEAWAY dabao\n" +
+  "• Tumhara profile channel mein post hoga\n\n" +
+  "<b>🗳️ VOTE KAISE KAREIN</b>\n" +
+  "• Channel mein participants ke naam pe Vote button hoga\n" +
+  "• Kisi doosre participant ko vote do (khud ko nahi)\n" +
+  "• 1 voter = 1 vote per giveaway\n\n" +
+  "<b>⚠️ VOTE KAM KAB HOGA</b>\n" +
+  "• Agar tum channel/group leave kar do\n" +
+  "• Toh tumhara diya hua vote automatically minus ho jayega\n" +
+  "• Isliye vote dene ke baad channel mein raho\n\n" +
+  "<b>🏆 LEADERBOARD</b>\n" +
+  "• Sabse zyada votes wala jeetega\n" +
+  "• Real-time votes update hote hain\n\n" +
+  "<i>Koi problem ho toh developer se contact karo.</i>";
 
 var buttons = [
-  [{ text: "CREATE", callback_data: "create_giveaway", style: "success" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  [{ text: "🔙 BACK", callback_data: "go_back_home", style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

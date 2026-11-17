@@ -1,6 +1,6 @@
 /*CMD
   command: cmd_leaderboard
-  help: View Top Participants ranking leaderboard for contest
+  help: Show contest leaderboard exactly matching Python bot
   need_reply: false
 CMD*/
 
@@ -14,7 +14,11 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = (params || "").trim();
+var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+if (gid.indexOf("leaderboard_") === 0) {
+  gid = gid.replace("leaderboard_", "");
+}
+
 if (!gid) {
   Bot.runCommand("my_giveaways");
   return;
@@ -24,58 +28,48 @@ var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
 if (!giveaway) {
-  Bot.sendMessage("❌ Contest data nahi mila.");
+  Bot.sendMessage("❌ Contest not found!");
   Bot.runCommand("my_giveaways");
   return;
 }
 
-var participants = giveaway.participants || [];
+var users = giveaway.users || {};
 var vote_counts = giveaway.vote_counts || {};
 
-// Sort participants by votes descending
-var ranked = [];
-for (var i = 0; i < participants.length; i++) {
-  var p = participants[i];
-  var v = vote_counts[p.id] || 0;
-  ranked.push({
-    id: p.id,
-    name: p.name || "User",
-    username: p.username ? ("@" + p.username) : "No username",
-    votes: v
-  });
-}
-
-ranked.sort(function(a, b) {
-  return b.votes - a.votes;
-});
-
-var medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-
-var text = 
-  "🏆 <b>CONTEST LEADERBOARD</b> 🏆\n\n" +
-  "🎯 <b>Contest:</b> " + giveaway.title + "\n" +
-  "🆔 <b>Contest ID:</b> <code>" + gid + "</code>\n" +
-  "📢 <b>Channel:</b> <code>" + giveaway.channel + "</code>\n\n" +
-  "━━━━━━━━━━━━━━━━━━━━━━\n";
-
-if (ranked.length === 0) {
-  text += "⚠️ <i>Abhi tak kisi bhi user ne contest join nahi kiya hai.</i>\n";
-} else {
-  var limit = Math.min(ranked.length, 10);
-  for (var j = 0; j < limit; j++) {
-    var r = ranked[j];
-    var medal = medals[j] || ("#" + (j + 1));
-    text += medal + " <b>" + r.name + "</b> (" + r.username + ")\n" +
-            "   🆔 ID: <code>" + r.id + "</code> • 🗳 <b>" + r.votes + " Votes</b>\n\n";
+// If users is empty but participants exists
+if (Object.keys(users).length === 0 && giveaway.participants) {
+  for (var i = 0; i < giveaway.participants.length; i++) {
+    var p = giveaway.participants[i];
+    users[p.id] = p.name || ("User " + p.id);
   }
 }
 
-text += "━━━━━━━━━━━━━━━━━━━━━━\n" +
-        "<i>Total Participants: " + ranked.length + "</i>";
+var items = [];
+for (var uid in vote_counts) {
+  items.push({
+    uid: uid,
+    name: users[uid] || ("User " + uid),
+    votes: vote_counts[uid] || 0
+  });
+}
+
+items.sort(function(a, b) {
+  return b.votes - a.votes;
+});
+
+var top10 = items.slice(0, 10);
+
+var text = "<b>🗓 LEADERBOARD</b>\n\n";
+if (top10.length === 0) {
+  text += "<i>No votes yet.</i>";
+} else {
+  for (var j = 0; j < top10.length; j++) {
+    text += "<b>" + (j + 1) + ".</b> " + top10[j].name + " - <b>" + top10[j].votes + " votes</b>\n";
+  }
+}
 
 var buttons = [
-  [{ text: "🔄 Refresh Ranking", callback_data: "cmd_leaderboard " + gid, style: "success" }],
-  [{ text: "🔙 Back to Contest", callback_data: "manage_giveaway " + gid, style: "primary" }]
+  [{ text: "BACK", callback_data: "manage_" + gid, style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

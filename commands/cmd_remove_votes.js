@@ -1,27 +1,26 @@
 /*CMD
   command: cmd_remove_votes
-  help: Prompt for Participant User ID and number of votes to cut/remove
+  help: Prompt for removing votes exactly matching Python bot
   need_reply: false
 CMD*/
 
-var gid = (params || "").trim();
+var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+if (gid.indexOf("removevotes_") === 0) {
+  gid = gid.replace("removevotes_", "");
+}
+
 if (!gid) {
   Bot.runCommand("my_giveaways");
   return;
 }
 
-User.setProperty("active_manage_gid", gid, "string");
+User.setProperty("vote_giveaway", gid, "string");
+User.setProperty("vote_action", "remove", "string");
 
-var text = 
-  "➖ <b>REMOVE / CUT VOTES FROM PARTICIPANT</b>\n\n" +
-  "🆔 <b>Contest ID:</b> <code>" + gid + "</code>\n\n" +
-  "Participant ka <b>User ID</b> aur <b>Kitne votes minus karne hain</b> space dekar bhejein:\n\n" +
-  "<i>Example:</i> <code>1234567890 5</code>\n" +
-  "<i>(Yeh user ID 1234567890 ke 5 votes cut kar dega)</i>\n\n" +
-  "Cancel karne ke liye neeche button dabayein ya <code>cancel</code> type karein.";
+var text = "<b>💎 REMOVE VOTES</b>\n\nSend: <code>USER_ID VOTES</code>";
 
 var buttons = [
-  [{ text: "🔙 Cancel", callback_data: "manage_giveaway " + gid, style: "primary" }]
+  [{ text: "BACK", callback_data: "manage_" + gid, style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

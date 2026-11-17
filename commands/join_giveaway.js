@@ -1,6 +1,6 @@
 /*CMD
   command: join_giveaway
-  help: Join a contest as a participant and post participant card to channel
+  help: Handle giveaway link and participant entry exactly matching Python bot
   need_reply: false
 CMD*/
 
@@ -14,115 +14,151 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = options && options.giveaway_id ? options.giveaway_id : (params || "").trim();
+var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+var action = (options && options.action) ? options.action : "view";
 
-if (!gid) {
-  Bot.sendMessage("⚠️ Contest ID nahi mili.");
-  return;
+if (gid.indexOf("retry_join_") === 0) {
+  action = "retry";
+  gid = gid.replace("retry_join_", "");
+} else if (gid.indexOf("join_") === 0) {
+  action = "join";
+  gid = gid.replace("join_", "");
 }
 
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+var uid = user.telegramid;
+
+// Dynamic Bot Username detected from token
+var BOT_USERNAME = Bot.getProperty("bot_username");
+if (!BOT_USERNAME) {
+  var bInfo = getPropJson("bot_info", null);
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) BOT_USERNAME = bInfo.result.username.replace("@", "");
+    else if (bInfo.username) BOT_USERNAME = bInfo.username.replace("@", "");
+  }
+}
+if (!BOT_USERNAME) {
+  BOT_USERNAME = "bot";
+}
 
 if (!giveaway) {
-  Bot.sendMessage("❌ Ye Contest exist nahi karta ya delete ho chuka hai.");
+  Api.sendMessage({ chat_id: target_chat, text: "<b>❌ INVALID LINK</b>", parse_mode: "HTML" });
   return;
 }
 
-if (giveaway.status !== "active") {
-  Bot.sendMessage("🛑 Ye Contest abhi band (ended) ho chuka hai.");
+if (giveaway.ended || giveaway.status === "ended") {
+  Api.sendMessage({ chat_id: target_chat, text: "<b>❌ GIVEAWAY ENDED</b>", parse_mode: "HTML" });
   return;
 }
 
-var uid = user.telegramid;
-giveaway.participants = giveaway.participants || [];
+giveaway.users = giveaway.users || {};
 giveaway.vote_counts = giveaway.vote_counts || {};
-giveaway.voted_users = giveaway.voted_users || {};
+giveaway.vote_messages = giveaway.vote_messages || {};
 
-var already_joined = false;
-for (var i = 0; i < giveaway.participants.length; i++) {
-  if (giveaway.participants[i].id == uid) {
-    already_joined = true;
-    break;
+var already_joined = !!(giveaway.users[uid]);
+if (!already_joined && giveaway.participants) {
+  for (var i = 0; i < giveaway.participants.length; i++) {
+    if (giveaway.participants[i].id == uid) {
+      already_joined = true;
+      break;
+    }
   }
 }
 
-var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+var already_posted = !!(giveaway.vote_messages[uid]);
 
-if (already_joined) {
-  var reply_text = 
-    "⚠️ <b>Aap pehle hi is Contest me participate kar chuke hain!</b>\n\n" +
-    "🏆 <b>Contest:</b> " + giveaway.title + "\n" +
-    "🗳 <b>Current Votes:</b> " + (giveaway.vote_counts[uid] || 0) + "\n\n" +
-    "Apne friends aur groups me channel post share karke votes badhayein!";
-  
-  var my_buttons = [
-    [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
-    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+// If user is already joined
+if (already_joined && action !== "join") {
+  var status_note = already_posted ? "✅ Already posted in channel!" : "⚠️ Not posted yet — POST button dabao";
+  var already_text = 
+    "<b>🌟 ALREADY PARTICIPATED!</b>\n\n" +
+    "<b>Your ID:</b> <code>" + uid + "</code>\n" +
+    "<b>Status:</b> " + status_note;
+
+  var already_buttons = [
+    [{ text: "POST MY VOTE MSG", callback_data: "join_" + gid, style: "success" }]
   ];
 
   Api.sendMessage({
     chat_id: target_chat,
-    text: reply_text,
+    text: already_text,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: my_buttons }
+    reply_markup: { inline_keyboard: already_buttons }
   });
   return;
 }
 
-var participant = {
-  id: uid,
-  name: (user.first_name || "User") + (user.last_name ? (" " + user.last_name) : ""),
-  username: user.username || null,
-  joined_at: new Date().toISOString()
-};
+var ch_disp = giveaway.channel_display || giveaway.channel || "Channel";
+var full_name = (user.first_name || "User") + (user.last_name ? (" " + user.last_name) : "");
+var uname = user.username ? ("@" + user.username) : "No username";
 
-giveaway.participants.push(participant);
-giveaway.vote_counts[uid] = 0;
-giveaway.voted_users[uid] = [];
+// Action = JOIN (Register participant and post to channel)
+if (action === "join") {
+  giveaway.users[uid] = full_name;
+  giveaway.vote_counts[uid] = giveaway.vote_counts[uid] || 0;
 
-all_giveaways[gid] = giveaway;
-Bot.setProperty("all_giveaways", all_giveaways, "json");
+  // Post participant message to channel
+  var card_text = 
+    "<b>🎯 PARTICIPANT</b>\n\n" +
+    "<b>👤 Name:</b> " + full_name + "\n" +
+    "<b>🆔 ID:</b> <code>" + uid + "</code>\n" +
+    "<b>📍 Username:</b> " + uname + "\n\n" +
+    "<i>Vote karne ke liye neeche button dabao!</i>";
 
-var joined_cnt = User.getProperty("giveaways_joined", 0);
-User.setProperty("giveaways_joined", joined_cnt + 1, "integer");
+  var card_buttons = [
+    [{ text: "Vote - " + (giveaway.vote_counts[uid] || 0), callback_data: "vote_" + gid + "_" + uid, style: "success" }]
+  ];
 
-var uname = user.username ? ("@" + user.username) : "None";
-var card_text = 
-  "🎯 <b>NEW PARTICIPANT JOINED!</b>\n\n" +
-  "👤 <b>Name:</b> " + participant.name + "\n" +
-  "🆔 <b>User ID:</b> <code>" + uid + "</code>\n" +
-  "📝 <b>Username:</b> " + uname + "\n" +
-  "🏆 <b>Contest:</b> " + giveaway.title + "\n\n" +
-  "<i>Neeche diye gaye button par click karke inhein vote karein!</i> 👇";
+  Api.sendMessage({
+    chat_id: giveaway.channel,
+    text: card_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: card_buttons },
+    on_result: "on_channel_post_success"
+  });
 
-var vote_button = [
-  [
-    { text: "🗳 Vote (0)", callback_data: "vote " + gid + " " + uid, style: "success" }
-  ]
-];
+  all_giveaways[gid] = giveaway;
+  Bot.setProperty("all_giveaways", all_giveaways, "json");
 
-Api.sendMessage({
-  chat_id: giveaway.channel,
-  text: card_text,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: vote_button }
-});
+  var j_cnt = User.getProperty("giveaways_joined", 0);
+  User.setProperty("giveaways_joined", j_cnt + 1, "integer");
 
-var confirm_text = 
-  "🎉 <b>Badhai ho! Aap successfully Contest me enter ho gaye hain!</b>\n\n" +
-  "🏆 <b>Contest:</b> " + giveaway.title + "\n" +
-  "📢 <b>Channel:</b> <code>" + giveaway.channel + "</code>\n\n" +
-  "Aapka participant card channel me post ho gaya hai. Ab aap apne friends ko channel se vote karne ke liye bol sakte hain!";
+  var reg_text = 
+    "✅ <b>Registration Successful!</b>\n\n" +
+    full_name + "\n" +
+    "<code>" + uid + "</code>\n\n" +
+    "<i>Channel me tumhara voting message post ho gaya.</i>";
 
-var confirm_buttons = [
-  [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: reg_text,
+    parse_mode: "HTML"
+  });
+  return;
+}
+
+// Default Landing Screen for Giveaway Link (Matching Python Bot)
+var ch_raw = giveaway.channel || "";
+var ch_url = ch_raw.indexOf("@") === 0 ? ("https://t.me/" + ch_raw.replace("@", "")) : ("https://t.me/" + BOT_USERNAME + "?startchannel=true");
+
+var count = Object.keys(giveaway.users).length;
+
+var landing_text = 
+  "<b>🎁 EXCLUSIVE GIVEAWAY</b>\n\n" +
+  "<b>Hosted By:</b> " + ch_disp + "\n" +
+  "<b>Participants:</b> " + count + "\n\n" +
+  "<b>✅ You are eligible!</b>";
+
+var landing_buttons = [
+  [{ text: "JOIN CHANNEL", url: ch_url, style: "success" }],
+  [{ text: "JOIN GIVEAWAY", callback_data: "join_" + gid, style: "success" }]
 ];
 
 Api.sendMessage({
   chat_id: target_chat,
-  text: confirm_text,
+  text: landing_text,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: confirm_buttons }
+  reply_markup: { inline_keyboard: landing_buttons }
 });

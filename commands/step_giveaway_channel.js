@@ -1,6 +1,6 @@
 /*CMD
   command: step_giveaway_channel
-  help: Process channel identifier input with auto-detection, live chat verification, and 1-active-contest-per-channel rule
+  help: Process channel input, enforce 1 active contest rule, and create giveaway directly matching Python bot
   need_reply: true
 CMD*/
 
@@ -25,91 +25,160 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
+var OWNER_ID = 8710308658;
 var channel_input = message.trim();
 var all_giveaways = getPropJson("all_giveaways", {});
 var target_lower = channel_input.toLowerCase();
 var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;
 
-// Check 1 Active Contest Per Channel Rule
-var existing_active = null;
+// Dynamic Bot Username detected from token
+var BOT_USERNAME = Bot.getProperty("bot_username");
+if (!BOT_USERNAME) {
+  var bInfo = getPropJson("bot_info", null);
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) BOT_USERNAME = bInfo.result.username.replace("@", "");
+    else if (bInfo.username) BOT_USERNAME = bInfo.username.replace("@", "");
+  }
+}
+if (!BOT_USERNAME) {
+  BOT_USERNAME = "bot";
+}
 
-for (var gid in all_giveaways) {
-  var g = all_giveaways[gid];
-  if (g && g.status === "active") {
-    var g_ch = String(g.channel || "").toLowerCase();
-    var g_uname = g_ch.startsWith("@") ? g_ch.substring(1) : g_ch;
-    
-    if (g_ch === target_lower || (target_uname && g_uname === target_uname)) {
-      existing_active = g;
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+// Check 1 Active Contest Per Channel Rule (Matching Python Bot)
+var existing_active = null;
+for (var egid in all_giveaways) {
+  var eg = all_giveaways[egid];
+  if (eg && (eg.status === "active" || !eg.ended)) {
+    var eg_ch = String(eg.channel || "").toLowerCase();
+    var eg_uname = eg_ch.startsWith("@") ? eg_ch.substring(1) : eg_ch;
+    if (eg_ch === target_lower || (target_uname && eg_uname === target_uname)) {
+      existing_active = eg;
       break;
     }
   }
 }
 
-var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
-
 if (existing_active) {
-  var error_msg = 
-    "🚫 <b>IS CHANNEL ME PEHLE SE CONTEST ACTIVE HAI!</b> 🚫\n\n" +
-    "📢 <b>Channel:</b> <code>" + channel_input + "</code>\n" +
-    "🏆 <b>Active Contest:</b> " + existing_active.title + "\n" +
-    "🆔 <b>Contest ID:</b> <code>#" + existing_active.id + "</code>\n\n" +
-    "⚠️ <i>Ek channel me ek time par sirf ek hi contest chal sakta hai.</i>\n\n" +
-    "Naya contest shuru karne se pehle puraana contest <b>END</b> karein!";
+  var act_link = "https://t.me/" + BOT_USERNAME + "?start=" + existing_active.id;
+  var act_text = 
+    "<b>🚨 GIVEAWAY ALREADY ACTIVE!</b>\n\n" +
+    "<b>Link:</b>\n" +
+    "<code>" + act_link + "</code>";
 
-  var error_buttons = [
-    [{ text: "⚙️ Manage Active Contest", callback_data: "manage_giveaway " + existing_active.id, style: "primary" }],
-    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  var act_buttons = [
+    [{ text: "MANAGE", callback_data: "manage_" + existing_active.id, style: "primary" }],
+    [{ text: "MAIN MENU", callback_data: "go_back_home", style: "primary" }]
   ];
 
   Api.sendMessage({
     chat_id: target_chat,
-    text: error_msg,
+    text: act_text,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: error_buttons }
+    reply_markup: { inline_keyboard: act_buttons }
   });
   return;
 }
 
-User.setProperty("temp_giveaway_channel", channel_input, "string");
+// Generate 8-character Alphanumeric Contest ID (Matching Python Bot)
+function makeId(length) {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var result = "";
+  for (var i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+var gid = makeId(8);
 
-// Immediately auto-register channel into connected_channels safely
+var user_full_name = (user.first_name || "User") + (user.last_name ? (" " + user.last_name) : "");
+
+// Create Giveaway Object (Fully compatible with Python and Admin panel)
+var giveaway = {
+  id: gid,
+  channel: channel_input,
+  channel_display: channel_input,
+  title: "Contest #" + gid,
+  creator: user.telegramid,
+  creator_id: user.telegramid,
+  creator_name: user_full_name,
+  created_at: new Date().toISOString(),
+  ended: false,
+  status: "active",
+  users: {},
+  participants: [],
+  vote_counts: {},
+  voted_users: {},
+  vote_records: {},
+  vote_messages: {}
+};
+
+all_giveaways[gid] = giveaway;
+Bot.setProperty("all_giveaways", all_giveaways, "json");
+
+// Update User Stats
+var cr_count = User.getProperty("giveaways_created", 0);
+User.setProperty("giveaways_created", cr_count + 1, "integer");
+
+var my_list = User.getProperty("my_giveaway_ids", []);
+my_list.push(gid);
+User.setProperty("my_giveaway_ids", my_list, "json");
+
+// Auto-register channel into connected_channels for Admin Channel Control Suite
 var channels = getPropJson("connected_channels", {});
 var ch_key = String(channel_input);
-
 if (!channels[ch_key]) {
   channels[ch_key] = {
     id: ch_key,
     title: channel_input,
     username: channel_input.startsWith("@") ? channel_input.replace("@", "") : "",
     type: "channel",
-    added_by: (user.first_name || "User"),
+    added_by: user_full_name,
     added_by_id: user.telegramid,
     added_at: new Date().toISOString()
   };
   Bot.setProperty("connected_channels", channels, "json");
 }
 
-// Fetch live Telegram chat details to get numeric ID, title and notify owner
+// Query Telegram Chat Info asynchronously to enrich title & ID
 Api.getChat({
   chat_id: channel_input,
   on_result: "on_channel_chat_info"
 });
 
-var text = 
-  "✅ <b>Channel Saved:</b> <code>" + channel_input + "</code>\n\n" +
-  "<b>Step 2:</b> Contest ka <b>Title / Prize Description</b> likhein.\n\n" +
-  "<i>Example:</i> 🎁 <b>Photo Contest 2026 - Winner gets ₹1000!</b>";
+// Notify OWNER (Matching Python Bot)
+var owner_alert = 
+  "🔔 <b>NEW GIVEAWAY</b>\n\n" +
+  "👤 " + user_full_name + "\n" +
+  "🆔 <code>" + user.telegramid + "</code>\n" +
+  "📢 " + channel_input;
+
+Api.sendMessage({
+  chat_id: OWNER_ID,
+  text: owner_alert,
+  parse_mode: "HTML"
+});
+
+// Reply to User (Matching Python Bot)
+var link = "https://t.me/" + BOT_USERNAME + "?start=" + gid;
+var success_text = 
+  "<b>✅ GIVEAWAY CREATED!</b>\n\n" +
+  "<b>ID:</b> <code>" + gid + "</code>\n" +
+  "<b>Channel:</b> " + channel_input + "\n\n" +
+  "<b>LINK:</b>\n" +
+  "<code>" + link + "</code>";
 
 var buttons = [
-  [{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]
+  [
+    { text: "MANAGE", callback_data: "manage_" + gid, style: "primary" },
+    { text: "MAIN MENU", callback_data: "go_back_home", style: "primary" }
+  ]
 ];
 
 Api.sendMessage({
   chat_id: target_chat,
-  text: text,
+  text: success_text,
   parse_mode: "HTML",
   reply_markup: { inline_keyboard: buttons }
 });
-
-Bot.runCommand("step_giveaway_title");

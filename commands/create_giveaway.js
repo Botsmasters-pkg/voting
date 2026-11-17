@@ -1,17 +1,17 @@
 /*CMD
   command: create_giveaway
-  help: Start giveaway/contest creation wizard with primary styled cancel button
+  help: Start giveaway creation wizard exactly matching Python bot
   need_reply: false
 CMD*/
 
 var text = 
-  "🎯 <b>Create New Contest / Giveaway</b>\n\n" +
-  "<b>Step 1:</b> Apne Telegram Channel ka username ya ID bhejo jisme contest karwana hai.\n\n" +
-  "<i>Example:</i> <code>@MyContestChannel</code> ya <code>-1001234567890</code>\n\n" +
-  "⚠️ <b>Dhyan dein:</b> Bot ko us channel me pehle <b>Admin</b> banana zaroori hai!";
+  "⚡ <b>CREATE GIVEAWAY</b>\n\n" +
+  "Send channel info:\n\n" +
+  "<b>Public:</b> <code>@username</code>\n" +
+  "<b>Private:</b> <code>-1001234567890</code>";
 
 var buttons = [
-  [{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]
+  [{ text: "❌ CANCEL", callback_data: "go_back_home", style: "danger" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

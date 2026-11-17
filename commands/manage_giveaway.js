@@ -1,6 +1,6 @@
 /*CMD
   command: manage_giveaway
-  help: Contest Management Panel with Add Votes, Remove Votes, Leaderboard, and End Giveaway
+  help: Contest Management Panel exactly matching Python bot
   need_reply: false
 CMD*/
 
@@ -16,7 +16,11 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = (params || "").trim();
+var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+if (gid.indexOf("manage_") === 0) {
+  gid = gid.replace("manage_", "");
+}
+
 if (!gid) {
   Bot.runCommand("my_giveaways");
   return;
@@ -25,63 +29,68 @@ if (!gid) {
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
 if (!giveaway) {
-  Bot.sendMessage("❌ Contest data nahi mila ya delete ho chuka hai.");
-  Bot.runCommand("my_giveaways");
+  var not_found_text = "<b>❌ Not found!</b>";
+  var not_found_btn = [[{ text: "BACK", callback_data: "my_giveaways", style: "primary" }]];
+  if (request && request.callback_query && request.callback_query.message) {
+    Api.editMessageText({
+      chat_id: request.callback_query.message.chat.id,
+      message_id: request.callback_query.message.message_id,
+      text: not_found_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: not_found_btn }
+    });
+  } else {
+    Api.sendMessage({
+      chat_id: target_chat,
+      text: not_found_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: not_found_btn }
+    });
+  }
   return;
 }
 
 var uid = user.telegramid;
-// Verify permission: only creator or bot owner can manage
-if (uid != OWNER_ID && giveaway.creator_id != uid) {
-  Bot.sendMessage("🚫 Access Denied: Aap is contest ke creator nahi hain.");
+if (uid != OWNER_ID && giveaway.creator != uid && giveaway.creator_id != uid) {
+  Bot.sendMessage("🚫 Access Denied: Aap is giveaway ke creator nahi hain.");
   return;
 }
 
-var p_count = giveaway.participants ? giveaway.participants.length : 0;
-var total_v = 0;
-if (giveaway.vote_counts) {
-  for (var k in giveaway.vote_counts) {
-    total_v += giveaway.vote_counts[k];
-  }
+var is_ended = giveaway.ended || giveaway.status === "ended";
+var status = is_ended ? "🔴 ENDED" : "🟢 ACTIVE";
+var ch_display = giveaway.channel_display || giveaway.channel || "Channel";
+
+var joined_count = 0;
+if (giveaway.users && typeof giveaway.users === "object") {
+  joined_count = Object.keys(giveaway.users).length;
+} else if (giveaway.participants && Array.isArray(giveaway.participants)) {
+  joined_count = giveaway.participants.length;
 }
 
-var status_str = (giveaway.status === "ended") ? "🔴 ENDED" : "🟢 ACTIVE";
-var bot_uname = Bot.getProperty("bot_username", "bot");
-var join_url = "https://t.me/" + bot_uname + "?start=join_" + gid;
-
 var text = 
-  "⚡ <b>CONTEST MANAGEMENT PANEL</b> ⚡\n\n" +
-  "🏆 <b>Title:</b> " + giveaway.title + "\n" +
-  "🆔 <b>Contest ID:</b> <code>" + gid + "</code>\n" +
-  "📢 <b>Channel:</b> <code>" + giveaway.channel + "</code>\n" +
-  "📊 <b>Status:</b> <b>" + status_str + "</b>\n" +
-  "👥 <b>Total Participants:</b> <code>" + p_count + "</code>\n" +
-  "🗳 <b>Total Votes:</b> <code>" + total_v + "</code>\n\n" +
-  "🔗 <b>Direct Join Link:</b>\n<code>" + join_url + "</code>\n\n" +
-  "<i>Neeche diye gaye buttons se contest ko control karein 👇</i>";
+  "<b>➡️ MANAGEMENT PANEL</b>\n\n" +
+  "<b>Status:</b> " + status + "\n" +
+  "<b>Channel:</b> " + ch_display + "\n" +
+  "<b>Joined:</b> " + joined_count;
 
 var buttons = [
   [
-    { text: "➕ ADD VOTES", callback_data: "cmd_add_votes " + gid, style: "success" },
-    { text: "➖ REMOVE VOTES", callback_data: "cmd_remove_votes " + gid, style: "primary" }
+    { text: "ADD VOTES", callback_data: "addvotes_" + gid, style: "primary" },
+    { text: "REMOVE VOTES", callback_data: "removevotes_" + gid, style: "danger" }
   ],
   [
-    { text: "🏆 LEADERBOARD", callback_data: "cmd_leaderboard " + gid, style: "primary" }
+    { text: "LEADERBOARD", callback_data: "leaderboard_" + gid, style: "primary" }
+  ],
+  [
+    { text: "END GIVEAWAY", callback_data: "endgiveaway_" + gid, style: "danger" }
+  ],
+  [
+    { text: "BACK", callback_data: "my_giveaways", style: "primary" }
   ]
 ];
-
-if (giveaway.status !== "ended") {
-  buttons.push([
-    { text: "🛑 END GIVEAWAY", callback_data: "cmd_end_giveaway " + gid, style: "primary" }
-  ]);
-}
-
-buttons.push([
-  { text: "🔙 Back to Contests", callback_data: "my_giveaways", style: "primary" }
-]);
-
-var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
 if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageText({

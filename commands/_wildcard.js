@@ -1,6 +1,6 @@
 /*CMD
   command: *
-  help: Catches channel member updates, channel posts, adds/removes channels, and sends live owner alerts
+  help: Catches callbacks, channel member updates, channel posts, and owner alerts
   need_reply: false
 CMD*/
 
@@ -22,6 +22,76 @@ if (!Bot.getProperty("bot_username")) {
     result_to_bot_property: "bot_info",
     on_result: "on_save_bot_info"
   });
+}
+
+// 0. Handle Dynamic Callback Queries
+if (request && request.callback_query && request.callback_query.data) {
+  var data = request.callback_query.data;
+
+  if (data === "go_back_home" || data === "cancel_creation") {
+    Bot.runCommand("/start");
+    return;
+  }
+  if (data === "create_giveaway") {
+    Bot.runCommand("create_giveaway");
+    return;
+  }
+  if (data === "my_giveaways") {
+    Bot.runCommand("my_giveaways");
+    return;
+  }
+  if (data === "my_stats") {
+    Bot.runCommand("my_stats");
+    return;
+  }
+  if (data === "how_it_works") {
+    Bot.runCommand("how_it_works");
+    return;
+  }
+  if (data.indexOf("manage_") === 0) {
+    var mgid = data.replace("manage_", "");
+    Bot.run({ command: "manage_giveaway", options: { giveaway_id: mgid } });
+    return;
+  }
+  if (data.indexOf("addvotes_") === 0) {
+    var agid = data.replace("addvotes_", "");
+    Bot.run({ command: "cmd_add_votes", options: { giveaway_id: agid } });
+    return;
+  }
+  if (data.indexOf("removevotes_") === 0) {
+    var rgid = data.replace("removevotes_", "");
+    Bot.run({ command: "cmd_remove_votes", options: { giveaway_id: rgid } });
+    return;
+  }
+  if (data.indexOf("leaderboard_") === 0) {
+    var lgid = data.replace("leaderboard_", "");
+    Bot.run({ command: "cmd_leaderboard", options: { giveaway_id: lgid } });
+    return;
+  }
+  if (data.indexOf("confirm_end_") === 0) {
+    var cegid = data.replace("confirm_end_", "");
+    Bot.run({ command: "cmd_end_giveaway", options: { giveaway_id: cegid, action: "confirm" } });
+    return;
+  }
+  if (data.indexOf("endgiveaway_") === 0) {
+    var egid = data.replace("endgiveaway_", "");
+    Bot.run({ command: "cmd_end_giveaway", options: { giveaway_id: egid } });
+    return;
+  }
+  if (data.indexOf("retry_join_") === 0) {
+    var rjgid = data.replace("retry_join_", "");
+    Bot.run({ command: "join_giveaway", options: { giveaway_id: rjgid, action: "retry" } });
+    return;
+  }
+  if (data.indexOf("join_") === 0) {
+    var jgid = data.replace("join_", "");
+    Bot.run({ command: "join_giveaway", options: { giveaway_id: jgid, action: "join" } });
+    return;
+  }
+  if (data.indexOf("vote_") === 0) {
+    Bot.run({ command: "vote", options: { giveaway_id: data.replace("vote_", "") } });
+    return;
+  }
 }
 
 // 1. Telegram my_chat_member status changes (Bot added as Admin or removed)
@@ -73,7 +143,6 @@ if (request && request.my_chat_member) {
   if (new_status === "left" || new_status === "kicked") {
     var removed_title = chat.title || (channels[chat_key] ? channels[chat_key].title : "Channel");
     
-    // Remove from connected list so it does NOT show in channel list
     if (channels[chat_key]) {
       delete channels[chat_key];
     }
@@ -100,7 +169,7 @@ if (request && request.my_chat_member) {
   }
 }
 
-// 2. Channel Posts Detection (When bot is admin in channel and posts are published)
+// 2. Channel Posts Detection
 if (request && request.channel_post && request.channel_post.chat) {
   var cp_chat = request.channel_post.chat;
   var cp_key = String(cp_chat.id);
