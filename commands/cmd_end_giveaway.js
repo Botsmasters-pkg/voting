@@ -6,6 +6,12 @@ CMD*/
 
 var OWNER_ID = 8710308658;
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
   if (!val) return default_val;
@@ -19,6 +25,8 @@ function getPropJson(name, default_val) {
 var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
 var is_confirm = (options && options.action === "confirm");
 
+raw = String(raw).replace(/^cmd_end_giveaway\s*/i, "").trim();
+
 if (raw.indexOf("confirm_end_") === 0) {
   is_confirm = true;
   raw = raw.replace("confirm_end_", "");
@@ -26,10 +34,10 @@ if (raw.indexOf("confirm_end_") === 0) {
   raw = raw.replace("endgiveaway_", "");
 }
 
-var parts = raw.split(" ");
+var parts = raw.split(/\s+/);
 if (parts[0] === "confirm") {
   is_confirm = true;
-  raw = parts[1] || "";
+  raw = parts.slice(1).join(" ");
 }
 
 var gid = raw.trim();
@@ -48,7 +56,10 @@ if (!giveaway) {
 }
 
 var uid = user.telegramid;
-if (uid != OWNER_ID && giveaway.creator != uid && giveaway.creator_id != uid) {
+var is_creator = (giveaway.creator == uid || giveaway.creator_id == uid || String(giveaway.creator) === String(uid) || String(giveaway.creator_id) === String(uid));
+var is_owner = (uid == OWNER_ID || String(uid) === String(OWNER_ID));
+
+if (!is_creator && !is_owner) {
   Bot.sendMessage("🚫 Access Denied.");
   return;
 }
@@ -60,8 +71,8 @@ if (!is_confirm) {
   var confirm_text = "<b>⚠️ End this giveaway?</b>";
   var confirm_buttons = [
     [
-      { text: "CONFIRM", callback_data: "confirm_end_" + gid, style: "danger" },
-      { text: "CANCEL", callback_data: "manage_" + gid, style: "primary" }
+      { text: "CONFIRM", callback_data: "cmd_end_giveaway confirm " + gid, style: "danger" },
+      { text: "CANCEL", callback_data: "manage_giveaway " + gid, style: "primary" }
     ]
   ];
 

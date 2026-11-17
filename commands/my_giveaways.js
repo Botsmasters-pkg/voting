@@ -1,10 +1,16 @@
 /*CMD
   command: my_giveaways
-  help: List active giveaways matching Python bot
+  help: List active giveaways matching Python bot with instant callback answer & safe space routing
   need_reply: false
 CMD*/
 
 var OWNER_ID = 8710308658;
+
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -24,10 +30,15 @@ var buttons = [];
 
 for (var gid in all_giveaways) {
   var g = all_giveaways[gid];
-  if (g && (g.creator == uid || g.creator_id == uid || uid == OWNER_ID) && !g.ended && g.status !== "ended") {
+  if (!g) continue;
+  var is_creator = (g.creator == uid || g.creator_id == uid || String(g.creator) === String(uid) || String(g.creator_id) === String(uid));
+  var is_owner = (uid == OWNER_ID || String(uid) === String(OWNER_ID));
+  var is_active = (!g.ended && g.status !== "ended");
+
+  if ((is_creator || is_owner) && is_active) {
     var ch_disp = g.channel_display || g.channel || gid;
     buttons.push([
-      { text: "📢 " + ch_disp, callback_data: "manage_" + gid, style: "primary" }
+      { text: "📢 " + ch_disp, callback_data: "manage_giveaway " + gid, style: "primary" }
     ]);
   }
 }
@@ -39,7 +50,7 @@ if (buttons.length === 0) {
 }
 
 buttons.push([
-  { text: "MAIN MENU", callback_data: "go_back_home", style: "primary" }
+  { text: "MAIN MENU", callback_data: "/start", style: "primary" }
 ]);
 
 var text = "<b>💰 YOUR GIVEAWAYS</b>";

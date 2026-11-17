@@ -1,10 +1,16 @@
 /*CMD
   command: manage_giveaway
-  help: Contest Management Panel exactly matching Python bot
+  help: Contest Management Panel exactly matching Python bot with safe space routing & callback answer
   need_reply: false
 CMD*/
 
 var OWNER_ID = 8710308658;
+
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -16,10 +22,8 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
-if (gid.indexOf("manage_") === 0) {
-  gid = gid.replace("manage_", "");
-}
+var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+var gid = String(raw).replace(/^manage_giveaway\s*/i, "").replace(/^manage_/i, "").trim();
 
 if (!gid) {
   Bot.runCommand("my_giveaways");
@@ -28,7 +32,6 @@ if (!gid) {
 
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
-
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
 if (!giveaway) {
@@ -54,7 +57,10 @@ if (!giveaway) {
 }
 
 var uid = user.telegramid;
-if (uid != OWNER_ID && giveaway.creator != uid && giveaway.creator_id != uid) {
+var is_creator = (giveaway.creator == uid || giveaway.creator_id == uid || String(giveaway.creator) === String(uid) || String(giveaway.creator_id) === String(uid));
+var is_owner = (uid == OWNER_ID || String(uid) === String(OWNER_ID));
+
+if (!is_creator && !is_owner) {
   Bot.sendMessage("🚫 Access Denied: Aap is giveaway ke creator nahi hain.");
   return;
 }
@@ -78,14 +84,14 @@ var text =
 
 var buttons = [
   [
-    { text: "ADD VOTES", callback_data: "addvotes_" + gid, style: "primary" },
-    { text: "REMOVE VOTES", callback_data: "removevotes_" + gid, style: "danger" }
+    { text: "ADD VOTES", callback_data: "cmd_add_votes " + gid, style: "primary" },
+    { text: "REMOVE VOTES", callback_data: "cmd_remove_votes " + gid, style: "danger" }
   ],
   [
-    { text: "LEADERBOARD", callback_data: "leaderboard_" + gid, style: "primary" }
+    { text: "LEADERBOARD", callback_data: "cmd_leaderboard " + gid, style: "primary" }
   ],
   [
-    { text: "END GIVEAWAY", callback_data: "endgiveaway_" + gid, style: "danger" }
+    { text: "END GIVEAWAY", callback_data: "cmd_end_giveaway " + gid, style: "danger" }
   ],
   [
     { text: "BACK", callback_data: "my_giveaways", style: "primary" }

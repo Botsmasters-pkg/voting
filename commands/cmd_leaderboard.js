@@ -4,6 +4,12 @@
   need_reply: false
 CMD*/
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
   if (!val) return default_val;
@@ -14,10 +20,8 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
-if (gid.indexOf("leaderboard_") === 0) {
-  gid = gid.replace("leaderboard_", "");
-}
+var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+var gid = String(raw).replace(/^cmd_leaderboard\s*/i, "").replace(/^leaderboard_/i, "").trim();
 
 if (!gid) {
   Bot.runCommand("my_giveaways");
@@ -36,7 +40,6 @@ if (!giveaway) {
 var users = giveaway.users || {};
 var vote_counts = giveaway.vote_counts || {};
 
-// If users is empty but participants exists
 if (Object.keys(users).length === 0 && giveaway.participants) {
   for (var i = 0; i < giveaway.participants.length; i++) {
     var p = giveaway.participants[i];
@@ -69,7 +72,7 @@ if (top10.length === 0) {
 }
 
 var buttons = [
-  [{ text: "BACK", callback_data: "manage_" + gid, style: "primary" }]
+  [{ text: "BACK", callback_data: "manage_giveaway " + gid, style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

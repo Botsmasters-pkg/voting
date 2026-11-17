@@ -4,10 +4,14 @@
   need_reply: false
 CMD*/
 
-var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
-if (gid.indexOf("removevotes_") === 0) {
-  gid = gid.replace("removevotes_", "");
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
 }
+
+var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+var gid = String(raw).replace(/^cmd_remove_votes\s*/i, "").replace(/^removevotes_/i, "").trim();
 
 if (!gid) {
   Bot.runCommand("my_giveaways");
@@ -20,7 +24,7 @@ User.setProperty("vote_action", "remove", "string");
 var text = "<b>💎 REMOVE VOTES</b>\n\nSend: <code>USER_ID VOTES</code>";
 
 var buttons = [
-  [{ text: "BACK", callback_data: "manage_" + gid, style: "primary" }]
+  [{ text: "BACK", callback_data: "manage_giveaway " + gid, style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

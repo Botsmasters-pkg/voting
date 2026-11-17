@@ -26,6 +26,9 @@ if (!Bot.getProperty("bot_username")) {
 
 // 0. Handle Dynamic Callback Queries
 if (request && request.callback_query && request.callback_query.data) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
   var data = request.callback_query.data;
 
   if (data === "go_back_home" || data === "cancel_creation") {

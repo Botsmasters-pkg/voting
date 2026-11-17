@@ -117,7 +117,7 @@ answer("🎉 Vote recorded!", false);
 if (request && request.callback_query && request.callback_query.message) {
   var new_markup = {
     inline_keyboard: [[
-      { text: "Vote - " + new_votes, callback_data: "vote_" + gid + "_" + target_uid, style: "success" }
+      { text: "Vote - " + new_votes, callback_data: "vote " + gid + " " + target_uid, style: "success" }
     ]]
   };
   Api.editMessageReplyMarkup({

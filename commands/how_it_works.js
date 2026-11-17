@@ -4,6 +4,12 @@
   need_reply: false
 CMD*/
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 var text = 
   "<b>📖 HOW THIS BOT WORKS</b>\n\n" +
   "<b>🎁 CREATE GIVEAWAY</b>\n" +

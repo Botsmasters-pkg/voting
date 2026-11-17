@@ -1,8 +1,14 @@
 /*CMD
   command: join_giveaway
-  help: Handle giveaway link and participant entry exactly matching Python bot
+  help: Handle giveaway link and participant entry exactly matching Python bot with safe space routing
   need_reply: false
 CMD*/
+
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -14,17 +20,26 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var gid = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
+var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
 var action = (options && options.action) ? options.action : "view";
 
-if (gid.indexOf("retry_join_") === 0) {
-  action = "retry";
-  gid = gid.replace("retry_join_", "");
-} else if (gid.indexOf("join_") === 0) {
-  action = "join";
-  gid = gid.replace("join_", "");
+raw = String(raw).replace(/^join_giveaway\s*/i, "").trim();
+
+var parts = raw.split(/\s+/);
+if (parts.length > 1) {
+  action = parts[0];
+  raw = parts.slice(1).join(" ");
 }
 
+if (raw.indexOf("retry_join_") === 0) {
+  action = "retry";
+  raw = raw.replace("retry_join_", "");
+} else if (raw.indexOf("join_") === 0) {
+  action = "join";
+  raw = raw.replace("join_", "");
+}
+
+var gid = raw.trim();
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
@@ -78,7 +93,7 @@ if (already_joined && action !== "join") {
     "<b>Status:</b> " + status_note;
 
   var already_buttons = [
-    [{ text: "POST MY VOTE MSG", callback_data: "join_" + gid, style: "success" }]
+    [{ text: "POST MY VOTE MSG", callback_data: "join_giveaway join " + gid, style: "success" }]
   ];
 
   Api.sendMessage({
@@ -108,7 +123,7 @@ if (action === "join") {
     "<i>Vote karne ke liye neeche button dabao!</i>";
 
   var card_buttons = [
-    [{ text: "Vote - " + (giveaway.vote_counts[uid] || 0), callback_data: "vote_" + gid + "_" + uid, style: "success" }]
+    [{ text: "Vote - " + (giveaway.vote_counts[uid] || 0), callback_data: "vote " + gid + " " + uid, style: "success" }]
   ];
 
   Api.sendMessage({
@@ -153,7 +168,7 @@ var landing_text =
 
 var landing_buttons = [
   [{ text: "JOIN CHANNEL", url: ch_url, style: "success" }],
-  [{ text: "JOIN GIVEAWAY", callback_data: "join_" + gid, style: "success" }]
+  [{ text: "JOIN GIVEAWAY", callback_data: "join_giveaway join " + gid, style: "success" }]
 ];
 
 Api.sendMessage({

@@ -92,6 +92,12 @@ if (uid == OWNER_ID) {
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 // Direct Telegram API call to render vibrant success (green) & primary (blue) buttons
 if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageText({

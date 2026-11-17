@@ -4,6 +4,12 @@
   need_reply: false
 CMD*/
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
   if (!val) return default_val;

@@ -68,8 +68,8 @@ if (existing_active) {
     "<code>" + act_link + "</code>";
 
   var act_buttons = [
-    [{ text: "MANAGE", callback_data: "manage_" + existing_active.id, style: "primary" }],
-    [{ text: "MAIN MENU", callback_data: "go_back_home", style: "primary" }]
+    [{ text: "MANAGE", callback_data: "manage_giveaway " + existing_active.id, style: "primary" }],
+    [{ text: "MAIN MENU", callback_data: "/start", style: "primary" }]
   ];
 
   Api.sendMessage({
@@ -171,8 +171,8 @@ var success_text =
 
 var buttons = [
   [
-    { text: "MANAGE", callback_data: "manage_" + gid, style: "primary" },
-    { text: "MAIN MENU", callback_data: "go_back_home", style: "primary" }
+    { text: "MANAGE", callback_data: "manage_giveaway " + gid, style: "primary" },
+    { text: "MAIN MENU", callback_data: "/start", style: "primary" }
   ]
 ];
 
