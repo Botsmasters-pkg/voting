@@ -77,3 +77,13 @@ if (request && request.my_chat_member) {
     });
   }
 }
+
+// Check waiting clone email state
+if (user && message) {
+  var waiting_clone = Bot.getProperty("waiting_clone_email_" + user.telegramid);
+  if (waiting_clone) {
+    Bot.run({ command: "/41", options: { email: message } });
+    return;
+  }
+}
+
