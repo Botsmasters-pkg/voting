@@ -1,6 +1,6 @@
 /*CMD
   command: *
-  help: Catches channel member updates, adds/removes channels, and sends live owner alerts
+  help: Catches channel member updates, channel posts, adds/removes channels, and sends live owner alerts
   need_reply: false
 CMD*/
 
@@ -14,6 +14,7 @@ if (!Bot.getProperty("bot_username")) {
   });
 }
 
+// 1. Telegram my_chat_member status changes (Bot added as Admin or removed)
 if (request && request.my_chat_member) {
   var mcm = request.my_chat_member;
   var new_status = mcm.new_chat_member ? mcm.new_chat_member.status : "";
@@ -22,11 +23,11 @@ if (request && request.my_chat_member) {
   var chat_key = String(chat.id);
   var channels = Bot.getProperty("connected_channels", {});
 
-  // 1. Bot ADDED as Admin
-  if (new_status === "administrator") {
-    channels[chat_key] = {
+  // Bot ADDED as Admin or Member
+  if (new_status === "administrator" || new_status === "creator" || new_status === "member") {
+    var ch_obj = {
       id: chat_key,
-      title: chat.title || "Private Channel",
+      title: chat.title || (chat.username ? ("@" + chat.username) : "Private Channel"),
       username: chat.username || "",
       type: chat.type || "channel",
       added_by: (from.first_name || "User") + (from.last_name ? (" " + from.last_name) : ""),
@@ -34,6 +35,10 @@ if (request && request.my_chat_member) {
       added_by_username: from.username || "",
       added_at: new Date().toISOString()
     };
+    channels[chat_key] = ch_obj;
+    if (chat.username) {
+      channels["@" + chat.username.toLowerCase()] = ch_obj;
+    }
     Bot.setProperty("connected_channels", channels, "json");
 
     var add_notify = 
@@ -54,15 +59,18 @@ if (request && request.my_chat_member) {
     });
   }
 
-  // 2. Bot REMOVED / KICKED from Channel
+  // Bot REMOVED / KICKED from Channel
   if (new_status === "left" || new_status === "kicked") {
     var removed_title = chat.title || (channels[chat_key] ? channels[chat_key].title : "Channel");
     
     // Remove from connected list so it does NOT show in channel list
     if (channels[chat_key]) {
       delete channels[chat_key];
-      Bot.setProperty("connected_channels", channels, "json");
     }
+    if (chat.username && channels["@" + chat.username.toLowerCase()]) {
+      delete channels["@" + chat.username.toLowerCase()];
+    }
+    Bot.setProperty("connected_channels", channels, "json");
 
     var remove_notify = 
       "🚨 <b>BOT REMOVED FROM CHANNEL!</b> 🚨\n\n" +
@@ -82,7 +90,30 @@ if (request && request.my_chat_member) {
   }
 }
 
-// Check waiting clone email state
+// 2. Channel Posts Detection (When bot is admin in channel and posts are published)
+if (request && request.channel_post && request.channel_post.chat) {
+  var cp_chat = request.channel_post.chat;
+  var cp_key = String(cp_chat.id);
+  var cp_channels = Bot.getProperty("connected_channels", {});
+  if (!cp_channels[cp_key]) {
+    var cp_obj = {
+      id: cp_key,
+      title: cp_chat.title || "Channel",
+      username: cp_chat.username || "",
+      type: cp_chat.type || "channel",
+      added_by: "Channel Activity",
+      added_by_id: null,
+      added_at: new Date().toISOString()
+    };
+    cp_channels[cp_key] = cp_obj;
+    if (cp_chat.username) {
+      cp_channels["@" + cp_chat.username.toLowerCase()] = cp_obj;
+    }
+    Bot.setProperty("connected_channels", cp_channels, "json");
+  }
+}
+
+// 3. Check waiting clone email state
 if (user && message) {
   var waiting_clone = Bot.getProperty("waiting_clone_email_" + user.telegramid);
   if (waiting_clone) {

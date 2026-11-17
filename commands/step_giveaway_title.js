@@ -39,6 +39,22 @@ if (!BOT_USERNAME) {
   BOT_USERNAME = "bot";
 }
 
+// Auto-register channel into connected_channels
+var channels = Bot.getProperty("connected_channels", {});
+var ch_key = String(channel_target);
+if (!channels[ch_key]) {
+  channels[ch_key] = {
+    id: ch_key,
+    title: channel_target,
+    username: channel_target.startsWith("@") ? channel_target.replace("@", "") : "",
+    type: "channel",
+    added_by: (user.first_name || "User"),
+    added_by_id: user.telegramid,
+    added_at: new Date().toISOString()
+  };
+  Bot.setProperty("connected_channels", channels, "json");
+}
+
 // Create Giveaway Object
 var giveaway = {
   id: gid,
