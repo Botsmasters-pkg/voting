@@ -12,4 +12,8 @@ if (err_str.indexOf("message is not modified") !== -1 || err_str.indexOf("MESSAG
   return;
 }
 
-Bot.sendMessage("⚠️ <b>Warning:</b> Bot channel me message post/update nahi kar paya.\n\n<i>Check karein ki bot channel me added hai aur Post/Edit Messages ki permission hai.</i>\n\nDetail: " + err_str, { parse_mode: "HTML" });
+Api.sendMessage({
+  chat_id: 8710308658,
+  text: "⚠️ <b>Warning:</b> Bot channel me message post/update nahi kar paya.\n\n<i>Check karein ki bot channel me added hai aur Post/Edit Messages ki permission hai.</i>\n\nDetail: <code>" + err_str + "</code>",
+  parse_mode: "HTML"
+});

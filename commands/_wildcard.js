@@ -351,7 +351,7 @@ if (user && message) {
           var f_votes = (fgw.vote_counts && fgw.vote_counts[f_uid]) ? fgw.vote_counts[f_uid] : 0;
           Api.editMessageReplyMarkup({
             chat_id: fwd_chat.id,
-            message_id: fwd_mid,
+            message_id: parseInt(fwd_mid, 10),
             reply_markup: {
               inline_keyboard: [[
                 { text: "Vote - " + f_votes, callback_data: "vote " + f_gid + " " + f_uid, style: "success" }

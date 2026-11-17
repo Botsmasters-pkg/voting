@@ -54,7 +54,7 @@ for (var p_id in vote_messages) {
     var votes = vote_counts[p_id] || 0;
     Api.editMessageReplyMarkup({
       chat_id: target_channel,
-      message_id: mid,
+      message_id: parseInt(mid, 10),
       reply_markup: {
         inline_keyboard: [[
           { text: "Vote - " + votes, callback_data: "vote " + gid + " " + p_id, style: "success" }

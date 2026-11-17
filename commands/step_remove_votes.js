@@ -96,7 +96,7 @@ if (mid && target_channel) {
   };
   Api.editMessageReplyMarkup({
     chat_id: target_channel,
-    message_id: mid,
+    message_id: parseInt(mid, 10),
     reply_markup: new_markup,
     on_error: "on_channel_post_error"
   });

@@ -102,7 +102,7 @@ if (String(voter_id) === String(target_uid)) {
     var cur_v1 = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
     Api.editMessageReplyMarkup({
       chat_id: cb_chat_id,
-      message_id: cb_message_id,
+      message_id: parseInt(cb_message_id, 10),
       reply_markup: {
         inline_keyboard: [[
           { text: "Vote - " + cur_v1, callback_data: "vote " + gid + " " + target_uid, style: "success" }
@@ -130,7 +130,7 @@ if (giveaway.vote_records[vote_key] || (giveaway.voted_users && giveaway.voted_u
     var cur_v2 = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
     Api.editMessageReplyMarkup({
       chat_id: cb_chat_id,
-      message_id: cb_message_id,
+      message_id: parseInt(cb_message_id, 10),
       reply_markup: {
         inline_keyboard: [[
           { text: "Vote - " + cur_v2, callback_data: "vote " + gid + " " + target_uid, style: "success" }
@@ -164,14 +164,13 @@ if (target_channel) {
     cb_message_id: safe_mid,
     cb_id: safe_cb
   }, "json");
-
-  var cb_args = gid + " " + target_uid + " " + voter_id + " " + safe_chat + " " + safe_mid + " " + safe_cb;
+  Bot.setProperty("last_voter_id", voter_id, "integer");
 
   Api.getChatMember({
     chat_id: target_channel,
     user_id: voter_id,
-    on_result: "on_vote_member_check " + cb_args,
-    on_error: "on_vote_member_error " + cb_args
+    on_result: "on_vote_member_check",
+    on_error: "on_vote_member_error"
   });
   return;
 }
@@ -203,7 +202,7 @@ if (cb_chat_id && cb_message_id) {
   };
   Api.editMessageReplyMarkup({
     chat_id: cb_chat_id,
-    message_id: cb_message_id,
+    message_id: parseInt(cb_message_id, 10),
     reply_markup: new_markup,
     on_error: "on_channel_post_error"
   });

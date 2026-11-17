@@ -17,27 +17,27 @@ function getPropJson(name, default_val) {
 var member = options && options.result ? options.result : null;
 var status = member ? member.status : "";
 
-var raw_params = (params || "").trim().split(/\s+/);
-var gid = raw_params[0];
-var participant_id = raw_params[1];
-var voter_id = raw_params[2];
-var cb_chat_id = (raw_params[3] && raw_params[3] !== "none") ? raw_params[3] : null;
-var cb_message_id = (raw_params[4] && raw_params[4] !== "none") ? raw_params[4] : null;
-var cb_id = (raw_params[5] && raw_params[5] !== "none") ? raw_params[5] : null;
-
-if (!voter_id && user) {
+var voter_id = null;
+if (member && member.user && member.user.id) {
+  voter_id = member.user.id;
+} else if (user && user.telegramid) {
   voter_id = user.telegramid;
+} else {
+  voter_id = Bot.getProperty("last_voter_id");
 }
 
-if (!gid || !participant_id) {
-  var pctx = voter_id ? getPropJson("pending_vote_context_" + voter_id, null) : null;
-  if (pctx) {
-    gid = pctx.gid;
-    participant_id = pctx.target_uid;
-    if (!voter_id) voter_id = pctx.voter_id;
-    if (!cb_chat_id) cb_chat_id = (pctx.cb_chat_id !== "none") ? pctx.cb_chat_id : null;
-    if (!cb_message_id) cb_message_id = (pctx.cb_message_id !== "none") ? pctx.cb_message_id : null;
-    if (!cb_id) cb_id = (pctx.cb_id !== "none") ? pctx.cb_id : null;
+var pctx = voter_id ? getPropJson("pending_vote_context_" + voter_id, null) : null;
+var gid = pctx ? pctx.gid : null;
+var participant_id = pctx ? pctx.target_uid : null;
+var cb_chat_id = (pctx && pctx.cb_chat_id !== "none") ? pctx.cb_chat_id : null;
+var cb_message_id = (pctx && pctx.cb_message_id !== "none") ? pctx.cb_message_id : null;
+var cb_id = (pctx && pctx.cb_id !== "none") ? pctx.cb_id : null;
+
+if (!gid && params) {
+  var raw_params = (params || "").trim().split(/\s+/);
+  if (raw_params.length >= 2) {
+    gid = raw_params[0];
+    participant_id = raw_params[1];
   }
 }
 
@@ -149,7 +149,7 @@ if (target_channel && target_mid) {
 
   Api.editMessageReplyMarkup({
     chat_id: target_channel,
-    message_id: target_mid,
+    message_id: parseInt(target_mid, 10),
     reply_markup: { inline_keyboard: updated_button },
     on_error: "on_channel_post_error"
   });
