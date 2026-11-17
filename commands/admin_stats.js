@@ -36,8 +36,25 @@ var text =
   "<i>Last refreshed: " + new Date().toLocaleString() + "</i>";
 
 var buttons = [
-  [{ title: "🔄 Refresh", text: "🔄 Refresh", command: "admin_stats", callback_data: "admin_stats", style: "success" }],
-  [{ title: "🔙 Admin Panel", text: "🔙 Admin Panel", command: "/admin", callback_data: "/admin", style: "primary" }]
+  [{ text: "🔄 Refresh", callback_data: "admin_stats", style: "success" }],
+  [{ text: "🔙 Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}

@@ -1,6 +1,6 @@
 /*CMD
   command: step_giveaway_channel
-  help: Process channel identifier input
+  help: Process channel identifier input with primary styled cancel button
   need_reply: true
 CMD*/
 
@@ -24,8 +24,16 @@ var text =
   "<i>Example:</i> 🎁 <b>Photo Contest 2026 - Winner gets ₹1000!</b>";
 
 var buttons = [
-  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "/start", callback_data: "/start", style: "primary" }]
+  [{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: buttons }
+});
+
 Bot.runCommand("step_giveaway_title");

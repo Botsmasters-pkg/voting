@@ -1,11 +1,12 @@
 /*CMD
   command: my_giveaways
-  help: List user created contests
+  help: List user created contests with primary styled buttons
   need_reply: false
 CMD*/
 
 var my_list = User.getProperty("my_giveaway_ids", []);
 var all_giveaways = Bot.getProperty("all_giveaways", {});
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
 if (!my_list || my_list.length === 0) {
   var empty_text = 
@@ -13,10 +14,27 @@ if (!my_list || my_list.length === 0) {
     "Aapne abhi tak koi bhi Contest create nahi kiya hai.\n\n" +
     "Naya contest shuru karne ke liye neeche button dabayein!";
   
-  Bot.sendInlineKeyboard([
-    [{ title: "➕ Create Contest", text: "➕ Create Contest", command: "create_giveaway", callback_data: "create_giveaway", style: "success" }],
-    [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
-  ], empty_text, { parse_mode: "HTML" });
+  var empty_buttons = [
+    [{ text: "➕ Create Contest", callback_data: "create_giveaway", style: "success" }],
+    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  ];
+  
+  if (request && request.callback_query && request.callback_query.message) {
+    Api.editMessageText({
+      chat_id: request.callback_query.message.chat.id,
+      message_id: request.callback_query.message.message_id,
+      text: empty_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: empty_buttons }
+    });
+  } else {
+    Api.sendMessage({
+      chat_id: target_chat,
+      text: empty_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: empty_buttons }
+    });
+  }
   return;
 }
 
@@ -43,8 +61,23 @@ for (var i = 0; i < my_list.length; i++) {
 }
 
 var buttons = [
-  [{ title: "➕ Create Another", text: "➕ Create Another", command: "create_giveaway", callback_data: "create_giveaway", style: "success" }],
-  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
+  [{ text: "➕ Create Another", callback_data: "create_giveaway", style: "success" }],
+  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}
