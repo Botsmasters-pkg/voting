@@ -5,6 +5,8 @@
 CMD*/
 
 var target_uid = params || "User";
+var active_channel = User.getProperty("active_channel");
+
 var text = 
   "⚠️ <b>Promotion Failed!</b>\n\n" +
   "Bot user <code>" + target_uid + "</code> ko promote nahi kar paya.\n\n" +
@@ -13,7 +15,14 @@ var text =
   "2. User pehle se channel me nahi hai ya ID galat hai.";
 
 var buttons = [
-  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
+  [{ text: "🔙 Back to Channel Panel", callback_data: "ch_view " + active_channel, style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: buttons }
+});

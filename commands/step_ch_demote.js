@@ -1,6 +1,6 @@
 /*CMD
   command: step_ch_demote
-  help: Execute demote (remove admin rights) via promoteChatMember
+  help: Execute demote via promoteChatMember
   need_reply: true
 CMD*/
 
@@ -8,7 +8,7 @@ var active_channel = User.getProperty("active_channel");
 
 if (!message || message.toLowerCase() === "cancel" || message === "/start") {
   Bot.sendMessage("❌ Demotion cancel kiya gaya.");
-  Bot.runCommand("ch_panel");
+  Bot.runCommand("ch_view " + active_channel);
   return;
 }
 

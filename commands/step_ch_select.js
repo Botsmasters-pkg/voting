@@ -1,6 +1,6 @@
 /*CMD
   command: step_ch_select
-  help: Validate and save active channel
+  help: Validate and save channel to connected list
   need_reply: true
 CMD*/
 
@@ -11,18 +11,28 @@ if (!message) {
 }
 
 if (message === "/start" || message.toLowerCase() === "cancel") {
-  Bot.runCommand("/start");
+  Bot.runCommand("/admin");
   return;
 }
 
 var ch_input = message.trim();
 User.setProperty("active_channel", ch_input, "string");
 
-var my_channels = User.getProperty("my_channels", []);
-if (my_channels.indexOf(ch_input) === -1) {
-  my_channels.push(ch_input);
-  User.setProperty("my_channels", my_channels, "json");
+var channels = Bot.getProperty("connected_channels", {});
+var chat_key = String(ch_input);
+
+if (!channels[chat_key]) {
+  channels[chat_key] = {
+    id: chat_key,
+    title: ch_input,
+    username: ch_input.startsWith("@") ? ch_input.replace("@", "") : "",
+    type: "channel",
+    added_by: (user.first_name || "Admin"),
+    added_by_id: user.telegramid,
+    added_at: new Date().toISOString()
+  };
+  Bot.setProperty("connected_channels", channels, "json");
 }
 
-Bot.sendMessage("✅ <b>Channel Selected:</b> <code>" + ch_input + "</code>", { parse_mode: "HTML" });
-Bot.runCommand("ch_panel");
+Bot.sendMessage("✅ <b>Channel Added:</b> <code>" + ch_input + "</code>", { parse_mode: "HTML" });
+Bot.runCommand("ch_view " + ch_input);

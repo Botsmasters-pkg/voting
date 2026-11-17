@@ -8,7 +8,7 @@ var active_channel = User.getProperty("active_channel");
 
 if (!message || message.toLowerCase() === "cancel" || message === "/start") {
   Bot.sendMessage("❌ Promotion cancel kiya gaya.");
-  Bot.runCommand("ch_panel");
+  Bot.runCommand("ch_view " + active_channel);
   return;
 }
 
@@ -19,7 +19,7 @@ if (isNaN(target_uid)) {
   return;
 }
 
-Bot.sendMessage("⏳ Promoting User <code>" + target_uid + "</code> in channel...", { parse_mode: "HTML" });
+Bot.sendMessage("⏳ Promoting User <code>" + target_uid + "</code> as Admin in channel...", { parse_mode: "HTML" });
 
 Api.promoteChatMember({
   chat_id: active_channel,

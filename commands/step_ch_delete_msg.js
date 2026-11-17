@@ -8,7 +8,7 @@ var active_channel = User.getProperty("active_channel");
 
 if (!message || message.toLowerCase() === "cancel" || message === "/start") {
   Bot.sendMessage("❌ Cancelled.");
-  Bot.runCommand("ch_panel");
+  Bot.runCommand("ch_view " + active_channel);
   return;
 }
 
@@ -16,7 +16,6 @@ var target_mid = null;
 if (request && request.message && request.message.forward_from_message_id) {
   target_mid = request.message.forward_from_message_id;
 } else {
-  // If user pasted a link like https://t.me/channel/123
   if (message.indexOf("/") !== -1) {
     var parts = message.trim().split("/");
     target_mid = parseInt(parts[parts.length - 1]);

@@ -5,6 +5,8 @@
 CMD*/
 
 var mid = params || "Message";
+var active_channel = User.getProperty("active_channel");
+
 var text = 
   "⚠️ <b>Delete Failed!</b>\n\n" +
   "Message <code>" + mid + "</code> delete nahi ho saka.\n\n" +
@@ -14,7 +16,14 @@ var text =
   "3. Message 48 ghante se zyada purana hai.";
 
 var buttons = [
-  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
+  [{ text: "🔙 Back to Channel Panel", callback_data: "ch_view " + active_channel, style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: buttons }
+});

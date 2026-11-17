@@ -1,17 +1,26 @@
 /*CMD
   command: on_ch_get_link_error
-  help: Callback when invite link creation fails
+  help: Error callback when link creation fails
   need_reply: false
 CMD*/
 
-var err = options && options.error ? options.error : "Unknown";
+var target_chid = (params || User.getProperty("active_channel") || "").trim();
+
 var text = 
   "⚠️ <b>Link Generate Nahi Ho Paya!</b>\n\n" +
-  "Bot ke paas channel ka invite link create karne ki permission nahi hai.\n\n" +
-  "<i>Kripya check karein ki Bot channel me Admin hai aur 'Invite Users via Links' permission ON hai.</i>";
+  "🆔 <b>Chat ID:</b> <code>" + target_chid + "</code>\n\n" +
+  "<b>Wajah:</b> Bot ke paas channel ka invite link create karne ki permission nahi hai.\n\n" +
+  "<i>Check karein ki Bot channel me Admin hai aur 'Invite Users via Links' permission ON hai.</i>";
 
 var buttons = [
-  [{ title: "🔙 Back to Tools", text: "🔙 Back to Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
+  [{ text: "🔙 Back to Channel Panel", callback_data: "ch_view " + target_chid, style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: buttons }
+});

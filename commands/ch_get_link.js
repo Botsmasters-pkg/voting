@@ -4,18 +4,24 @@
   need_reply: false
 CMD*/
 
-var active_channel = User.getProperty("active_channel");
-if (!active_channel) {
-  Bot.sendMessage("⚠️ Pehle koi channel select karein.");
+var OWNER_ID = 8710308658;
+if (user.telegramid != OWNER_ID) {
+  Bot.sendMessage("🚫 Access Denied.");
+  return;
+}
+
+var target_chid = (params || User.getProperty("active_channel") || "").trim();
+if (!target_chid) {
+  Bot.sendMessage("⚠️ Koi channel select nahi hai.");
   Bot.runCommand("channel_tools");
   return;
 }
 
-Bot.sendMessage("⏳ Channel link generate ho raha hai...");
+Bot.sendMessage("⏳ <code>" + target_chid + "</code> ka Invite Link generate ho raha hai...", { parse_mode: "HTML" });
 
 Api.createChatInviteLink({
-  chat_id: active_channel,
-  name: "Bot Invite Link",
-  on_result: "on_ch_get_link_result",
-  on_error: "on_ch_get_link_error"
+  chat_id: target_chid,
+  name: "Toxic Admin Invite Link",
+  on_result: "on_ch_get_link_result " + target_chid,
+  on_error: "on_ch_get_link_error " + target_chid
 });

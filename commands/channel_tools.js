@@ -1,6 +1,6 @@
 /*CMD
   command: channel_tools
-  help: Channel admin tools menu
+  help: Display list of all connected channels for admin
   need_reply: false
 CMD*/
 
@@ -10,31 +10,37 @@ if (user.telegramid != OWNER_ID) {
   return;
 }
 
-var active_channel = User.getProperty("active_channel");
+var channels = Bot.getProperty("connected_channels", {});
+var keys = Object.keys(channels);
 
 var text = 
   "🎛 <b>CHANNEL ADMIN CONTROL SUITE</b> 🎛\n\n" +
-  "Is feature se aap bot ke channels ko manage kar sakte hain:\n\n" +
-  "🔗 <b>Get Link:</b> Channel ka invite link generate karein\n" +
-  "⬆️ <b>Promote:</b> Kisi user ko channel me Admin banayein\n" +
-  "⬇️ <b>Demote:</b> Admin privileges remove karein\n" +
-  "🗑 <b>Delete Message:</b> Channel ka koi bhi message delete karein\n\n";
+  "Yahan se aap bot me connected sabhi channels ko manage kar sakte hain.\n\n";
 
 var buttons = [];
 
-if (active_channel) {
-  text += "📌 <b>Current Active Channel:</b> <code>" + active_channel + "</code>\n\n";
-  buttons.push([
-    { text: "⚙️ Open Active Channel Panel", callback_data: "ch_panel", style: "success" }
-  ]);
+if (keys.length === 0) {
+  text += "⚠️ <i>Abhi koi bhi channel connected nahi hai.</i>\n\n" +
+          "Bot ko channel me <b>Admin</b> banayein ya neeche <b>➕ Add Channel</b> se manually connect karein.";
+} else {
+  text += "📋 <b>Connected Channels (" + keys.length + "):</b>\n" +
+          "<i>Kisi bhi channel par click karein uski Chat ID, Invite Link, Promote/Demote, aur Delete Message access karne ke liye 👇</i>";
+  
+  for (var i = 0; i < keys.length; i++) {
+    var ch = channels[keys[i]];
+    var label = "📢 " + ch.title + (ch.username ? (" (@" + ch.username + ")") : "");
+    buttons.push([
+      { text: label, callback_data: "ch_view " + ch.id, style: "primary" }
+    ]);
+  }
 }
 
 buttons.push([
-  { text: "➕ Select / Change Channel", callback_data: "ch_select_prompt", style: "success" }
+  { text: "➕ Add Channel Manually", callback_data: "ch_select_prompt", style: "success" }
 ]);
 
 buttons.push([
-  { text: "🔙 Back to Admin", callback_data: "/admin", style: "primary" }
+  { text: "🔙 Back to Admin Panel", callback_data: "/admin", style: "primary" }
 ]);
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
