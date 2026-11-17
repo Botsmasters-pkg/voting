@@ -117,6 +117,19 @@ if (String(voter_id) === String(target_uid)) {
 
 // Guard 1.5: Contest ended
 if (giveaway.ended || giveaway.status === "ended") {
+  if (cb_chat_id && cb_message_id) {
+    var cur_ve = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
+    Api.editMessageReplyMarkup({
+      chat_id: cb_chat_id,
+      message_id: parseInt(cb_message_id, 10),
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Ended (" + cur_ve + " Votes)", callback_data: "vote " + gid + " " + target_uid, style: "danger" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answer("🛑 Contest khatam ho chuka hai.", true);
   return;
 }
@@ -145,6 +158,19 @@ if (giveaway.vote_records[vote_key] || (giveaway.voted_users && giveaway.voted_u
 
 // Guard 3: Participants cannot cross-vote (Matching Python Bot)
 if (giveaway.users[voter_id] && giveaway.users[target_uid]) {
+  if (cb_chat_id && cb_message_id) {
+    var cur_v3 = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
+    Api.editMessageReplyMarkup({
+      chat_id: cb_chat_id,
+      message_id: parseInt(cb_message_id, 10),
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Vote - " + cur_v3, callback_data: "vote " + gid + " " + target_uid, style: "success" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answer("❌ Giveaway participants ek doosre ko vote nahi kar sakte! Sirf bahar wale vote kar sakte hain.", true);
   return;
 }

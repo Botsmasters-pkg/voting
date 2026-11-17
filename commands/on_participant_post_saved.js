@@ -28,29 +28,43 @@ if (!gid && params) {
   participant_uid = raw_params[1];
 }
 
+var p_latest = getPropJson("pending_post_saved_latest", null);
+if (p_latest && p_latest.gid) {
+  if (!gid) gid = p_latest.gid;
+  if (!participant_uid) participant_uid = p_latest.uid;
+}
+
 if (!gid && user) {
   var p = getPropJson("pending_post_saved_" + user.telegramid, null);
   if (p) {
-    gid = p.gid;
-    participant_uid = p.uid;
+    if (!gid) gid = p.gid;
+    if (!participant_uid) participant_uid = p.uid;
   }
 }
 
-// Fallback: Extract gid and participant_uid directly from the Telegram message button callback_data or text
-if ((!gid || !participant_uid) && options && options.result) {
+var res = (options && options.result) ? options.result : (options || {});
+var msg_id = res.message_id ? parseInt(res.message_id, 10) : null;
+var chat_id = (res.chat && res.chat.id) ? res.chat.id : null;
+
+// Fallback: Extract gid and participant_uid directly from callback_data or message text
+if ((!gid || !participant_uid) && res) {
   try {
-    if (options.result.reply_markup && options.result.reply_markup.inline_keyboard && options.result.reply_markup.inline_keyboard[0]) {
-      var cb = options.result.reply_markup.inline_keyboard[0][0].callback_data;
+    if (res.reply_markup && res.reply_markup.inline_keyboard && res.reply_markup.inline_keyboard[0]) {
+      var cb = res.reply_markup.inline_keyboard[0][0].callback_data;
       if (cb && cb.indexOf("vote ") === 0) {
         var parts = cb.replace("vote ", "").trim().split(/\s+/);
-        gid = parts[0];
-        participant_uid = parts[1];
+        if (!gid) gid = parts[0];
+        if (!participant_uid) participant_uid = parts[1];
       }
     }
-    if (!participant_uid && options.result.text) {
-      var id_m = options.result.text.match(/ID:\s*<code>?(\d+)<?/i) || options.result.text.match(/ID:\s*(\d+)/i);
-      if (id_m) {
-        participant_uid = id_m[1];
+    if (res.text) {
+      if (!gid) {
+        var gid_m = res.text.match(/Contest ID:\s*#?([A-Za-z0-9_-]+)/i) || res.text.match(/Contest:\s*#?([A-Za-z0-9_-]+)/i);
+        if (gid_m) gid = gid_m[1];
+      }
+      if (!participant_uid) {
+        var id_m = res.text.match(/ID:\s*<code>?(\d+)<?/i) || res.text.match(/ID:\s*(\d+)/i);
+        if (id_m) participant_uid = id_m[1];
       }
     }
   } catch (e) {}
@@ -67,19 +81,34 @@ if (!gid && participant_uid) {
   }
 }
 
-if (options && options.result && options.result.message_id && gid && participant_uid) {
+if (msg_id && gid && participant_uid) {
   var all_giveaways = getPropJson("all_giveaways", {});
   var giveaway = all_giveaways[gid];
   if (giveaway) {
     giveaway.vote_messages = giveaway.vote_messages || {};
-    giveaway.vote_messages[participant_uid] = options.result.message_id;
-    giveaway.vote_messages[String(participant_uid)] = options.result.message_id;
-    giveaway.vote_messages[Number(participant_uid)] = options.result.message_id;
-    if (options.result.chat && options.result.chat.id) {
-      giveaway.channel_chat_id = options.result.chat.id;
+    giveaway.vote_messages[participant_uid] = msg_id;
+    giveaway.vote_messages[String(participant_uid)] = msg_id;
+    giveaway.vote_messages[Number(participant_uid)] = msg_id;
+    if (chat_id) {
+      giveaway.channel_chat_id = chat_id;
     }
     all_giveaways[gid] = giveaway;
     Bot.setProperty("all_giveaways", all_giveaways, "json");
+
+    // If votes already exist (e.g. admin added votes or queued), sync channel button immediately!
+    var current_v = (giveaway.vote_counts && giveaway.vote_counts[participant_uid]) ? giveaway.vote_counts[participant_uid] : 0;
+    if (current_v > 0 && (chat_id || giveaway.channel)) {
+      Api.editMessageReplyMarkup({
+        chat_id: chat_id || giveaway.channel,
+        message_id: msg_id,
+        reply_markup: {
+          inline_keyboard: [[
+            { text: "Vote - " + current_v, callback_data: "vote " + gid + " " + participant_uid, style: "success" }
+          ]]
+        },
+        on_error: "on_channel_post_error"
+      });
+    }
   }
 }
 

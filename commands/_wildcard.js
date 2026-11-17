@@ -322,14 +322,16 @@ if (user && message) {
   // Check if message is a forwarded participant post from a channel
   var fwd_chat = null;
   var fwd_mid = null;
-  if (request && request.message) {
-    if (request.message.forward_from_chat) {
-      fwd_chat = request.message.forward_from_chat;
-      fwd_mid = request.message.forward_from_message_id;
-    } else if (request.message.forward_origin && request.message.forward_origin.type === "channel") {
-      fwd_chat = request.message.forward_origin.chat;
-      fwd_mid = request.message.forward_origin.message_id;
-    }
+  var req_msg = (request && request.message) ? request.message : (request || {});
+  if (req_msg.forward_from_chat) {
+    fwd_chat = req_msg.forward_from_chat;
+    fwd_mid = req_msg.forward_from_message_id;
+  } else if (req_msg.forward_origin && req_msg.forward_origin.type === "channel") {
+    fwd_chat = req_msg.forward_origin.chat;
+    fwd_mid = req_msg.forward_origin.message_id;
+  } else if (request && request.forward_from_chat) {
+    fwd_chat = request.forward_from_chat;
+    fwd_mid = request.forward_from_message_id;
   }
 
   if (fwd_chat && fwd_mid && message) {

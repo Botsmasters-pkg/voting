@@ -67,6 +67,19 @@ var is_member = (status === "creator" || status === "administrator" || status ==
 
 // If user is NOT a channel member, enforce membership requirement with frictionless 1-tap buttons
 if (!is_member) {
+  if (target_channel && target_mid) {
+    var cur_vnm = (giveaway.vote_counts && giveaway.vote_counts[participant_id]) ? giveaway.vote_counts[participant_id] : 0;
+    Api.editMessageReplyMarkup({
+      chat_id: target_channel,
+      message_id: parseInt(target_mid, 10),
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Vote - " + cur_vnm, callback_data: "vote " + gid + " " + participant_id, style: "success" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answerCb("⚠️ Vote count karane ke liye pehle channel join karein!", true);
 
   if (voter_id) {
@@ -102,7 +115,23 @@ giveaway.voted_users = giveaway.voted_users || {};
 giveaway.voted_users[participant_id] = giveaway.voted_users[participant_id] || [];
 
 var vote_key = voter_id + "_" + participant_id;
+var target_channel = cb_chat_id || giveaway.channel_chat_id || giveaway.channel;
+var target_mid = cb_message_id || (giveaway.vote_messages && (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)] || giveaway.vote_messages[Number(participant_id)]));
+
 if (giveaway.vote_records[vote_key] || giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
+  if (target_channel && target_mid) {
+    var cur_dup = giveaway.vote_counts[participant_id] || 0;
+    Api.editMessageReplyMarkup({
+      chat_id: target_channel,
+      message_id: parseInt(target_mid, 10),
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Vote - " + cur_dup, callback_data: "vote " + gid + " " + participant_id, style: "success" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answerCb("⚠️ Aap pehle hi vote de chuke hain!", true);
   return;
 }
@@ -138,7 +167,7 @@ User.setProperty("votes_given", votes_given + 1, "integer");
 
 // UPDATE BUTTON IN CHANNEL IN REAL-TIME
 var target_channel = cb_chat_id || giveaway.channel_chat_id || giveaway.channel;
-var target_mid = cb_message_id || giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)];
+var target_mid = cb_message_id || (giveaway.vote_messages && (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)] || giveaway.vote_messages[Number(participant_id)]));
 
 if (target_channel && target_mid) {
   var updated_button = [

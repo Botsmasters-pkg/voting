@@ -156,6 +156,7 @@ if (action === "join") {
   var card_text = 
     "🎯 <b>NEW PARTICIPANT JOINED!</b>\n\n" +
     prize_line +
+    "📌 <b>Contest ID:</b> #" + gid + "\n" +
     "👤 <b>Name:</b> " + full_name + "\n" +
     "🆔 <b>ID:</b> <code>" + uid + "</code>\n" +
     "📍 <b>Username:</b> " + uname + "\n\n" +
@@ -165,6 +166,9 @@ if (action === "join") {
     [{ text: "Vote - 0", callback_data: "vote " + gid + " " + uid, style: "success" }]
   ];
 
+  Bot.setProperty("pending_post_saved_latest", { gid: gid, uid: uid, ch: giveaway.channel, time: Date.now() }, "json");
+  Bot.setProperty("pending_post_saved_" + uid, { gid: gid, uid: uid, ch: giveaway.channel }, "json");
+
   Api.sendMessage({
     chat_id: giveaway.channel,
     text: card_text,
@@ -173,8 +177,6 @@ if (action === "join") {
     on_result: "on_participant_post_saved",
     on_error: "on_channel_post_error"
   });
-
-  Bot.setProperty("pending_post_saved_" + uid, { gid: gid, uid: uid, ch: giveaway.channel }, "json");
 
   all_giveaways[gid] = giveaway;
   Bot.setProperty("all_giveaways", all_giveaways, "json");
