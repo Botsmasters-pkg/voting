@@ -10,6 +10,10 @@ if (request && request.callback_query) {
   });
 }
 
+// Reset creation states
+User.setProperty("waiting_giveaway_channel", true, "boolean");
+User.setProperty("waiting_giveaway_title", false, "boolean");
+
 var text = 
   "🎯 <b>Create New Contest / Giveaway</b>\n\n" +
   "<b>Step 1:</b> Apne Telegram Channel ka username ya ID bhejo jisme contest karwana hai.\n\n" +

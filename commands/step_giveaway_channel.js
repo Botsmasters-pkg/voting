@@ -4,13 +4,16 @@
   need_reply: true
 CMD*/
 
-if (!message) {
+var raw_msg = (options && options.text) ? options.text : message;
+if (!raw_msg) {
   Bot.sendMessage("⚠️ Kripya valid channel username ya ID bhejein.");
   Bot.runCommand("step_giveaway_channel");
   return;
 }
 
-if (message === "/start" || message.toLowerCase() === "cancel") {
+if (raw_msg === "/start" || raw_msg.toLowerCase() === "cancel") {
+  User.setProperty("waiting_giveaway_channel", false, "boolean");
+  User.setProperty("waiting_giveaway_title", false, "boolean");
   Bot.runCommand("/start");
   return;
 }
@@ -25,7 +28,7 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var channel_input = message.trim();
+var channel_input = raw_msg.trim();
 
 // Normalize URL or plain username to valid Telegram chat identifier (@channel or -100xxx)
 if (channel_input.indexOf("t.me/") !== -1) {
@@ -117,9 +120,10 @@ if (existing_active) {
   return;
 }
 
-// Save channel temporarily for Step 2 and reset title ready flag
+// Save channel temporarily for Step 2 and arm waiting_giveaway_title
 User.setProperty("temp_giveaway_channel", channel_input, "string");
-User.setProperty("giveaway_title_ready", false, "boolean");
+User.setProperty("waiting_giveaway_channel", false, "boolean");
+User.setProperty("waiting_giveaway_title", true, "boolean");
 
 // Auto-register channel into connected_channels for Admin Control Suite
 var channels = getPropJson("connected_channels", {});

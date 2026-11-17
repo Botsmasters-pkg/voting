@@ -27,6 +27,8 @@ if (mode === "public") {
     "⚠️ <i>Bot ka is channel me Admin hona zaroori hai.</i>";
   next_command = "step_fsub_add";
 } else if (mode === "private") {
+  User.setProperty("waiting_fsub_chat_id", true, "boolean");
+  User.setProperty("waiting_fsub_link", false, "boolean");
   text = 
     "🔒 <b>ADD PRIVATE FORCE CHANNEL (Step 1/2)</b> 🔒\n\n" +
     "Pehle channel ka <b>Chat ID</b> bhejein:\n\n" +
@@ -34,6 +36,8 @@ if (mode === "public") {
     "⚠️ <i>Chat ID aane ke baad bot aapse channel ka Invite Link mangega.</i>";
   next_command = "step_fsub_chat_id";
 } else if (mode === "request") {
+  User.setProperty("waiting_fsub_chat_id", true, "boolean");
+  User.setProperty("waiting_fsub_link", false, "boolean");
   text = 
     "🟡 <b>ADD REQUEST CHANNEL (Step 1/2)</b> 🟡\n\n" +
     "Pehle channel ka <b>Chat ID</b> bhejein:\n\n" +

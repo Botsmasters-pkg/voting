@@ -7,17 +7,20 @@ CMD*/
 var OWNER_ID = 8710308658;
 if (user.telegramid != OWNER_ID) return;
 
-if (!message) {
+var raw_msg = (options && options.text) ? options.text : message;
+if (!raw_msg) {
   Bot.sendMessage("⚠️ Kripya valid Chat ID bhejein (Example: <code>-1001234567890</code>).", { parse_mode: "HTML" });
   Bot.runCommand("step_fsub_chat_id");
   return;
 }
 
-var input = message.trim();
+var input = raw_msg.trim();
 
 if (input === "/start" || input.toLowerCase() === "cancel") {
   User.setProperty("fsub_add_mode", null, "string");
   User.setProperty("fsub_temp_chat_id", null, "string");
+  User.setProperty("waiting_fsub_chat_id", false, "boolean");
+  User.setProperty("waiting_fsub_link", false, "boolean");
   Bot.runCommand("admin_fsub");
   return;
 }
@@ -31,7 +34,8 @@ if (input.indexOf("t.me/") !== -1 || input.indexOf("http") !== -1) {
 
 var chat_id = input;
 User.setProperty("fsub_temp_chat_id", chat_id, "string");
-User.setProperty("fsub_link_ready", false, "boolean");
+User.setProperty("waiting_fsub_chat_id", false, "boolean");
+User.setProperty("waiting_fsub_link", true, "boolean");
 
 var mode = User.getProperty("fsub_add_mode", "private");
 var link_type_name = mode === "request" ? "Join Request Link" : "Invite Link";

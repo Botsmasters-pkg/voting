@@ -4,13 +4,17 @@
   need_reply: true
 CMD*/
 
-if (!message) {
+var raw_msg = (options && options.text) ? options.text : message;
+
+if (!raw_msg) {
   Bot.sendMessage("⚠️ Kripya contest ka Prize / Title enter karein.");
   Bot.runCommand("step_giveaway_title");
   return;
 }
 
-if (message === "/start" || message.toLowerCase() === "cancel") {
+if (raw_msg === "/start" || raw_msg.toLowerCase() === "cancel") {
+  User.setProperty("waiting_giveaway_channel", false, "boolean");
+  User.setProperty("waiting_giveaway_title", false, "boolean");
   Bot.runCommand("/start");
   return;
 }
@@ -32,13 +36,16 @@ if (!channel_target) {
   return;
 }
 
-// Multi-step turn guard: If invoked in the same turn by step_giveaway_channel,
-// do not consume channel_input as title. Arm the prompt and wait for user's actual reply!
-if (User.getProperty("giveaway_title_ready") !== true) {
-  User.setProperty("giveaway_title_ready", true, "boolean");
+var input_str = raw_msg.trim();
+
+// If invoked synchronously by step_giveaway_channel in the same turn,
+// input_str matches channel_target. Simply wait for user's actual reply!
+if (input_str === channel_target || input_str === "@" + channel_target || ("@" + input_str) === channel_target) {
   return;
 }
-User.setProperty("giveaway_title_ready", false, "boolean");
+
+// Clear waiting state now that user has provided title
+User.setProperty("waiting_giveaway_title", false, "boolean");
 
 var all_giveaways = getPropJson("all_giveaways", {});
 var target_lower = String(channel_target).toLowerCase();
@@ -58,7 +65,7 @@ for (var egid in all_giveaways) {
   }
 }
 
-var title_input = message.trim();
+var title_input = input_str;
 User.setProperty("temp_giveaway_title", title_input, "string");
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

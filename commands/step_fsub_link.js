@@ -7,17 +7,21 @@ CMD*/
 var OWNER_ID = 8710308658;
 if (user.telegramid != OWNER_ID) return;
 
-if (!message) {
+var raw_msg = (options && options.text) ? options.text : message;
+
+if (!raw_msg) {
   Bot.sendMessage("⚠️ Kripya valid Link bhejein.");
   Bot.runCommand("step_fsub_link");
   return;
 }
 
-var input = message.trim();
+var input = raw_msg.trim();
 
 if (input === "/start" || input.toLowerCase() === "cancel") {
   User.setProperty("fsub_add_mode", null, "string");
   User.setProperty("fsub_temp_chat_id", null, "string");
+  User.setProperty("waiting_fsub_chat_id", false, "boolean");
+  User.setProperty("waiting_fsub_link", false, "boolean");
   Bot.runCommand("admin_fsub");
   return;
 }
@@ -35,13 +39,13 @@ function getPropJson(name, default_val) {
 var chat_id = User.getProperty("fsub_temp_chat_id");
 var mode = User.getProperty("fsub_add_mode", "private");
 
-// Multi-step turn guard: If invoked in same turn by step_fsub_chat_id,
-// arm the prompt and wait for user's actual link input!
-if (User.getProperty("fsub_link_ready") !== true) {
-  User.setProperty("fsub_link_ready", true, "boolean");
+// If invoked synchronously by step_fsub_chat_id in the same turn,
+// input matches chat_id. Simply wait for user's actual link!
+if (input === chat_id) {
   return;
 }
-User.setProperty("fsub_link_ready", false, "boolean");
+
+User.setProperty("waiting_fsub_link", false, "boolean");
 
 if (!chat_id) {
   Bot.sendMessage("⚠️ Chat ID session expire ho gaya. Kripya shuru se try karein.");
@@ -56,60 +60,54 @@ if (link.indexOf("t.me/") === -1 && link.indexOf("http") === -1) {
   return;
 }
 
-var fsub_channels = getPropJson("fsub_channels", []);
+var channels = getPropJson("fsub_channels", []);
 
-// Check if already added
-var exists = false;
-for (var i = 0; i < fsub_channels.length; i++) {
-  if (fsub_channels[i].chat_id === chat_id || fsub_channels[i].link === link) {
-    exists = true;
-    break;
+// Check duplicates
+for (var i = 0; i < channels.length; i++) {
+  if (channels[i].chat_id == chat_id) {
+    Bot.sendMessage("⚠️ Yeh channel ID pehle se force sub me add hai.");
+    Bot.runCommand("admin_fsub");
+    return;
   }
 }
 
-if (exists) {
-  Bot.sendMessage("⚠️ Yeh channel ya link pehle se hi Force Sub list me shamil hai!");
-  User.setProperty("fsub_add_mode", null, "string");
-  User.setProperty("fsub_temp_chat_id", null, "string");
-  Bot.runCommand("admin_fsub");
-  return;
-}
-
-var title = (mode === "request" ? "Request Channel" : "Private Channel") + " (" + chat_id + ")";
+var title = (mode === "request" ? "Request Channel (" : "Private Channel (") + chat_id + ")";
 
 var new_ch = {
-  id: chat_id,
-  title: title,
-  link: link,
   chat_id: chat_id,
+  link: link,
+  title: title,
   type: mode,
   added_at: new Date().toISOString()
 };
 
-fsub_channels.push(new_ch);
-Bot.setProperty("fsub_channels", fsub_channels, "json");
+channels.push(new_ch);
+Bot.setProperty("fsub_channels", channels, "json");
 
+// Clear session
 User.setProperty("fsub_add_mode", null, "string");
 User.setProperty("fsub_temp_chat_id", null, "string");
+User.setProperty("waiting_fsub_chat_id", false, "boolean");
+User.setProperty("waiting_fsub_link", false, "boolean");
 
-var conf_text = 
-  "✅ <b>FORCE CHANNEL ADDED SUCCESSFULLY!</b> ✅\n\n" +
-  "📌 <b>Type:</b> <code>" + mode.toUpperCase() + " CHANNEL</code>\n" +
-  "📢 <b>Title:</b> " + title + "\n" +
+var success_badge = mode === "request" ? "🟡 REQUEST CHANNEL ADDED" : "🔒 PRIVATE CHANNEL ADDED";
+
+var text = 
+  "✅ <b>" + success_badge + "!</b>\n\n" +
   "🆔 <b>Chat ID:</b> <code>" + chat_id + "</code>\n" +
-  "🔗 <b>Link:</b> " + link + "\n\n" +
-  (mode === "request" ? "✨ <i>Is channel me user ka join request pending rahega to bhi turant verified mana jayega!</i>\n\n" : "") +
-  "<i>Ab sabhi users ko bot access karne se pehle ise 3x3 JOIN button grid me join karna hoga.</i>";
+  "🔗 <b>Link:</b> " + link + "\n" +
+  "📊 <b>Type:</b> <code>" + mode.toUpperCase() + "</code>\n\n" +
+  (mode === "request" ? "✨ <i>Is channel me users ka pending join request turant verified consider hoga!</i>\n\n" : "") +
+  "Ab sabhi naye users ko bot use karne se pehle yeh channel join karna zaroori hoga.";
 
 var buttons = [
-  [{ text: "📋 View Channel List", callback_data: "admin_fsub_list", style: "primary" }],
-  [{ text: "🔙 Back to F-Sub Channels", callback_data: "admin_fsub", style: "primary" }]
+  [{ text: "🔙 F-Sub Dashboard", callback_data: "admin_fsub", style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 Api.sendMessage({
   chat_id: target_chat,
-  text: conf_text,
+  text: text,
   parse_mode: "HTML",
   reply_markup: { inline_keyboard: buttons }
 });

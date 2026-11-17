@@ -272,11 +272,50 @@ if (request && request.channel_post && request.channel_post.chat) {
   }
 }
 
-// 3. Check waiting clone email state
+// 3. User Text Message State Machine Dispatcher
 if (user && message) {
+  var msg_text = message.trim();
+
+  // Cancel commands
+  if (msg_text === "/cancel" || msg_text.toLowerCase() === "cancel") {
+    User.setProperty("waiting_giveaway_channel", false, "boolean");
+    User.setProperty("waiting_giveaway_title", false, "boolean");
+    User.setProperty("waiting_fsub_chat_id", false, "boolean");
+    User.setProperty("waiting_fsub_link", false, "boolean");
+    Bot.setProperty("waiting_clone_email_" + user.telegramid, false, "boolean");
+    Bot.sendMessage("❌ <i>Operation cancelled.</i>", { parse_mode: "HTML" });
+    Bot.runCommand("/start");
+    return;
+  }
+
+  // Clone email waiting
   var waiting_clone = Bot.getProperty("waiting_clone_email_" + user.telegramid);
   if (waiting_clone) {
     Bot.run({ command: "/41", options: { email: message } });
+    return;
+  }
+
+  // Contest creation Step 1 (Channel)
+  if (User.getProperty("waiting_giveaway_channel")) {
+    Bot.run({ command: "step_giveaway_channel", options: { text: message } });
+    return;
+  }
+
+  // Contest creation Step 2 (Title)
+  if (User.getProperty("waiting_giveaway_title")) {
+    Bot.run({ command: "step_giveaway_title", options: { text: message } });
+    return;
+  }
+
+  // Force sub Step 1 (Chat ID)
+  if (User.getProperty("waiting_fsub_chat_id")) {
+    Bot.run({ command: "step_fsub_chat_id", options: { text: message } });
+    return;
+  }
+
+  // Force sub Step 2 (Link)
+  if (User.getProperty("waiting_fsub_link")) {
+    Bot.run({ command: "step_fsub_link", options: { text: message } });
     return;
   }
 }
