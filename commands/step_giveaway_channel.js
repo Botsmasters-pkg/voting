@@ -43,6 +43,43 @@ var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : ta
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
+// Validate that input is NOT this bot or any Telegram bot
+var bot_uname = (Bot.getProperty("bot_username") || "").toLowerCase().replace("@", "");
+if (target_uname === bot_uname || target_uname === "toxicvotesbot" || (bot_uname && target_lower === "@" + bot_uname)) {
+  var error_bot = 
+    "❌ <b>YEH BOT KA USERNAME HAI!</b> ❌\n\n" +
+    "Aapne bot ka username enter kiya hai: <code>" + channel_input + "</code>\n\n" +
+    "👉 Kripya apna <b>Telegram Channel</b> (@MyChannel ya invite link) bhejein jisme yeh Bot <b>Admin</b> bana hua ho.";
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: error_bot,
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [[{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]]
+    }
+  });
+  Bot.runCommand("step_giveaway_channel");
+  return;
+}
+
+if (target_uname.endsWith("bot")) {
+  var error_bot2 = 
+    "❌ <b>BOT USERNAME NOT ALLOWED!</b> ❌\n\n" +
+    "Telegram me <code>" + channel_input + "</code> ek Bot ka username hai.\n" +
+    "Bot kisi doosre bot ko message post nahi kar sakta.\n\n" +
+    "👉 Kripya valid <b>Telegram Channel</b> (@MyChannel ya invite link) bhejein.";
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: error_bot2,
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [[{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]]
+    }
+  });
+  Bot.runCommand("step_giveaway_channel");
+  return;
+}
+
 // Check 1 Active Contest Per Channel Rule (Only block if contest is currently active, ignore ended)
 var existing_active = null;
 for (var egid in all_giveaways) {

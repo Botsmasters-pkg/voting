@@ -6,6 +6,7 @@ CMD*/
 
 var uid = user.telegramid;
 var index = parseInt(params || "0", 10);
+if (isNaN(index)) index = 0;
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -20,7 +21,8 @@ function getPropJson(name, default_val) {
 var fsub_channels = getPropJson("fsub_channels", []);
 if (index >= fsub_channels.length) {
   Bot.run({
-    command: "fsub_verify_step",
+    command: "fsub_verify",
+    run_after: 0.1,
     options: { index: index }
   });
   return;
@@ -35,19 +37,13 @@ var is_member = (status === "creator" || status === "administrator" || status ==
 // Special logic for Private Request Channel:
 // "रिक्वेस्ट चैनल में ये है कि उसका यूजर का रिक्वेस्ट पेंडिंग में रहे तो भी वेरिफाई माना जाए, एडमिन का अप्रूवल का वेट न करे, ओके।"
 if (!is_member && ch.type === "request") {
-  var req_key = "fsub_requested_" + ch.chat_id + "_" + uid;
-  if (Bot.getProperty(req_key)) {
-    is_member = true;
-  } else {
-    // In Telegram, when a user requests to join, status remains 'left' or unapproved until accepted.
-    // If the channel is a join request channel, accept pending request without waiting for admin approval.
-    is_member = true;
-  }
+  is_member = true;
 }
 
 if (is_member) {
   Bot.run({
-    command: "fsub_verify_step",
+    command: "fsub_verify",
+    run_after: 0.1,
     options: { index: index + 1 }
   });
 } else {

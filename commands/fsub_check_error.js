@@ -6,6 +6,7 @@ CMD*/
 
 var uid = user.telegramid;
 var index = parseInt(params || "0", 10);
+if (isNaN(index)) index = 0;
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -23,7 +24,8 @@ if (index < fsub_channels.length) {
   // If request channel, do not block user if bot cannot fetch pending member state
   if (ch && ch.type === "request") {
     Bot.run({
-      command: "fsub_verify_step",
+      command: "fsub_verify",
+      run_after: 0.1,
       options: { index: index + 1 }
     });
     return;

@@ -135,12 +135,18 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 var prize_title = giveaway.title || giveaway.prize || "";
 var title_line = prize_title ? ("🎯 <b>Contest:</b> " + prize_title + "\n") : "";
 
-if (giveaway.channel) {
+var bot_uname = (Bot.getProperty("bot_username") || "").toLowerCase().replace("@", "");
+var ch_str = String(giveaway.channel || "").toLowerCase().trim();
+var ch_uname = ch_str.startsWith("@") ? ch_str.substring(1) : ch_str;
+var is_bot = (ch_uname === bot_uname || ch_uname === "toxicvotesbot" || ch_uname.endsWith("bot"));
+
+if (giveaway.channel && !is_bot) {
   var channel_msg = "<b>💰 GIVEAWAY ENDED!</b>\n\n" + title_line + winner_text;
   Api.sendMessage({
     chat_id: giveaway.channel,
     text: channel_msg,
-    parse_mode: "HTML"
+    parse_mode: "HTML",
+    on_error: "on_channel_post_error"
   });
 }
 
