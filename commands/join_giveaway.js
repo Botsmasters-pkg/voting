@@ -45,6 +45,12 @@ var giveaway = all_giveaways[gid];
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 var uid = user.telegramid;
 
+var banned_users = getPropJson("banned_users", []);
+if (banned_users && (banned_users.indexOf(uid) !== -1 || banned_users.indexOf(Number(uid)) !== -1)) {
+  Api.sendMessage({ chat_id: target_chat, text: "🚫 <b>Access Denied:</b> Aapko is bot se ban kiya gaya hai.", parse_mode: "HTML" });
+  return;
+}
+
 // Dynamic Bot Username detected from token
 var BOT_USERNAME = Bot.getProperty("bot_username");
 if (!BOT_USERNAME) {

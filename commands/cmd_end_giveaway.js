@@ -25,7 +25,7 @@ function getPropJson(name, default_val) {
 var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
 var is_confirm = (options && options.action === "confirm");
 
-raw = String(raw).replace(/^cmd_end_giveaway\s*/i, "").trim();
+raw = String(raw).replace(/^cmd_end_giveaway\s*/i, "").replace(/^giveaway\s*/i, "").trim();
 
 if (raw.indexOf("confirm_end_") === 0) {
   is_confirm = true;

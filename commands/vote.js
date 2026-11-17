@@ -40,6 +40,13 @@ var gid = parts[0].trim();
 var target_uid = parts[1].trim();
 var voter_id = user.telegramid;
 
+// Guard 0: Check if voter is banned
+var banned_users = getPropJson("banned_users", []);
+if (banned_users && (banned_users.indexOf(voter_id) !== -1 || banned_users.indexOf(Number(voter_id)) !== -1)) {
+  answer("🚫 Aap is bot se banned hain!", true);
+  return;
+}
+
 // Guard 1: Cannot vote for oneself (Matching Python Bot)
 if (String(voter_id) === String(target_uid)) {
   answer("❌ Aap khud ko vote nahi kar sakte!", true);

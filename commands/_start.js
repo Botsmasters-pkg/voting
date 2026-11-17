@@ -32,9 +32,16 @@ if (!BOT_USERNAME) {
   return;
 }
 
+// Check Ban Status
+var banned_users = Bot.getProperty("banned_users", []);
+var uid = user.telegramid;
+if (banned_users && (banned_users.indexOf(uid) !== -1 || banned_users.indexOf(Number(uid)) !== -1)) {
+  Bot.sendMessage("🚫 <b>Access Denied:</b> Aapko is bot se ban kiya gaya hai.", { parse_mode: "HTML" });
+  return;
+}
+
 // Register user
 var all_users = Bot.getProperty("all_users", []);
-var uid = user.telegramid;
 if (all_users.indexOf(uid) === -1) {
   all_users.push(uid);
   Bot.setProperty("all_users", all_users, "json");

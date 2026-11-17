@@ -11,7 +11,7 @@ if (request && request.callback_query) {
 }
 
 var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
-var gid = String(raw).replace(/^cmd_remove_votes\s*/i, "").replace(/^removevotes_/i, "").trim();
+var gid = String(raw).replace(/^cmd_remove_votes\s*/i, "").replace(/^giveaway\s*/i, "").replace(/^removevotes_/i, "").trim();
 
 if (!gid) {
   Bot.runCommand("my_giveaways");

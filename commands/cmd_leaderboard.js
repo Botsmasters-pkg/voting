@@ -21,7 +21,7 @@ function getPropJson(name, default_val) {
 }
 
 var raw = (options && options.giveaway_id) ? options.giveaway_id : (params || "").trim();
-var gid = String(raw).replace(/^cmd_leaderboard\s*/i, "").replace(/^leaderboard_/i, "").trim();
+var gid = String(raw).replace(/^cmd_leaderboard\s*/i, "").replace(/^giveaway\s*/i, "").replace(/^leaderboard_/i, "").trim();
 
 if (!gid) {
   Bot.runCommand("my_giveaways");

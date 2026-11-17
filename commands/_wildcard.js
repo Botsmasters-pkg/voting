@@ -95,7 +95,32 @@ if (request && request.callback_query && request.callback_query.data) {
     Bot.runCommand("how_it_works");
     return;
   }
-  if (data.indexOf("manage_") === 0) {
+  if (data.indexOf("manage_giveaway ") === 0) {
+    Bot.run({ command: "manage_giveaway", params: data.replace("manage_giveaway ", "") });
+    return;
+  }
+  if (data.indexOf("cmd_add_votes ") === 0) {
+    Bot.run({ command: "cmd_add_votes", params: data.replace("cmd_add_votes ", "") });
+    return;
+  }
+  if (data.indexOf("cmd_remove_votes ") === 0) {
+    Bot.run({ command: "cmd_remove_votes", params: data.replace("cmd_remove_votes ", "") });
+    return;
+  }
+  if (data.indexOf("cmd_leaderboard ") === 0) {
+    Bot.run({ command: "cmd_leaderboard", params: data.replace("cmd_leaderboard ", "") });
+    return;
+  }
+  if (data.indexOf("cmd_end_giveaway ") === 0) {
+    Bot.run({ command: "cmd_end_giveaway", params: data.replace("cmd_end_giveaway ", "") });
+    return;
+  }
+  if (data.indexOf("step_giveaway_duration ") === 0) {
+    Bot.run({ command: "step_giveaway_duration", params: data.replace("step_giveaway_duration ", "") });
+    return;
+  }
+
+  if (data.indexOf("manage_") === 0 && data.indexOf("manage_giveaway") !== 0) {
     var mgid = data.replace("manage_", "");
     Bot.run({ command: "manage_giveaway", options: { giveaway_id: mgid } });
     return;
