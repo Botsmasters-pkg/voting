@@ -41,7 +41,7 @@ if (options && options.result) {
 
   // Notify Owner if newly added/detected
   if (is_new) {
-    var add_notify = 
+    var add_notify =
       "🔔 <b>CHANNEL CONNECTED TO BOT!</b> 🔔\n\n" +
       "📢 <b>Channel Title:</b> " + (ch.title || "Channel") + "\n" +
       "🆔 <b>Chat ID:</b> <code>" + ch.id + "</code>\n" +
