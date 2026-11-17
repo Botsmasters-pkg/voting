@@ -36,8 +36,8 @@ var text =
   "<i>Last refreshed: " + new Date().toLocaleString() + "</i>";
 
 var buttons = [
-  [{ text: "🔄 Refresh", callback_data: "admin_stats", style: "success" }],
-  [{ text: "🔙 Admin Panel", callback_data: "/admin", style: "primary" }]
+  [{ title: "🔄 Refresh", text: "🔄 Refresh", command: "admin_stats", callback_data: "admin_stats" }],
+  [{ title: "🔙 Admin Panel", text: "🔙 Admin Panel", command: "/admin", callback_data: "/admin" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

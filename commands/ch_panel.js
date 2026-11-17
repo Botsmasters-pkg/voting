@@ -18,18 +18,18 @@ var text =
 
 var buttons = [
   [
-    { text: "🔗 Get Channel Link", callback_data: "ch_get_link", style: "success" }
+    { title: "🔗 Get Channel Link", text: "🔗 Get Channel Link", command: "ch_get_link", callback_data: "ch_get_link" }
   ],
   [
-    { text: "⬆️ Promote User", callback_data: "ch_promote", style: "success" },
-    { text: "⬇️ Demote User", callback_data: "ch_demote", style: "primary" }
+    { title: "⬆️ Promote User", text: "⬆️ Promote User", command: "ch_promote", callback_data: "ch_promote" },
+    { title: "⬇️ Demote User", text: "⬇️ Demote User", command: "ch_demote", callback_data: "ch_demote" }
   ],
   [
-    { text: "🗑 Delete Message", callback_data: "ch_delete_msg", style: "primary" }
+    { title: "🗑 Delete Message", text: "🗑 Delete Message", command: "ch_delete_msg", callback_data: "ch_delete_msg" }
   ],
   [
-    { text: "🔄 Switch Channel", callback_data: "ch_select_prompt", style: "primary" },
-    { text: "🔙 Main Menu", callback_data: "/start", style: "primary" }
+    { title: "🔄 Switch Channel", text: "🔄 Switch Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt" },
+    { title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }
   ]
 ];
 

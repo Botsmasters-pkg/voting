@@ -85,7 +85,7 @@ var join_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?start=join_" +
 
 var channel_keyboard = [
   [
-    { text: "🎯 Join Contest", url: join_url, style: "success" }
+    { title: "🎯 Join Contest", text: "🎯 Join Contest", url: join_url }
   ]
 ];
 
@@ -107,8 +107,8 @@ var success_text =
   "<code>" + join_url + "</code>";
 
 var buttons = [
-  [{ text: "📊 My Contests", callback_data: "my_giveaways", style: "primary" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  [{ title: "📊 My Contests", text: "📊 My Contests", command: "my_giveaways", callback_data: "my_giveaways" }],
+  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, success_text, { parse_mode: "HTML" });

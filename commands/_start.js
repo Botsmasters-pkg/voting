@@ -55,25 +55,25 @@ var connect_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?startchanne
 
 var buttons = [
   [
-    { text: "➕ Create Contest", callback_data: "create_giveaway", style: "success" },
-    { text: "🎛 Channel Tools", callback_data: "channel_tools", style: "success" },
-    { text: "📊 My Contests", callback_data: "my_giveaways", style: "primary" }
+    { title: "➕ Create Contest", text: "➕ Create Contest", command: "create_giveaway", callback_data: "create_giveaway" },
+    { title: "🎛 Channel Tools", text: "🎛 Channel Tools", command: "channel_tools", callback_data: "channel_tools" },
+    { title: "📊 My Contests", text: "📊 My Contests", command: "my_giveaways", callback_data: "my_giveaways" }
   ],
   [
-    { text: "📈 My Stats", callback_data: "my_stats", style: "primary" },
-    { text: "ℹ️ How It Works", callback_data: "how_it_works", style: "primary" }
+    { title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats" },
+    { title: "ℹ️ How It Works", text: "ℹ️ How It Works", command: "how_it_works", callback_data: "how_it_works" }
   ],
   [
-    { text: "👨‍💻 Developer", url: "https://t.me/codevexa", style: "success" }
+    { title: "👨‍💻 Developer", text: "👨‍💻 Developer", url: "https://t.me/codevexa" }
   ],
   [
-    { text: "🔗 Connect Channel (Admin)", url: connect_url, style: "success" }
+    { title: "🔗 Connect Channel (Admin)", text: "🔗 Connect Channel (Admin)", url: connect_url }
   ]
 ];
 
 if (uid == OWNER_ID) {
   buttons.push([
-    { text: "⚙️ Admin Panel", callback_data: "/admin", style: "primary" }
+    { title: "⚙️ Admin Panel", text: "⚙️ Admin Panel", command: "/admin", callback_data: "/admin" }
   ]);
 }
 

@@ -20,8 +20,8 @@ var text =
   "• Bot ensure karta hai ki ek user ek hi vote de sake!";
 
 var buttons = [
-  [{ text: "➕ Start Now", callback_data: "create_giveaway", style: "success" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  [{ title: "➕ Start Now", text: "➕ Start Now", command: "create_giveaway", callback_data: "create_giveaway" }],
+  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

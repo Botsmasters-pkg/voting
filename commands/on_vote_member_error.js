@@ -42,7 +42,7 @@ if (request && request.callback_query && request.callback_query.message) {
 
   var updated_button = [
     [
-      { text: "🗳 Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
+      { title: "🗳 Vote - ", text: "🗳 Vote - ", command: "vote ", callback_data: "vote " }
     ]
   ];
 

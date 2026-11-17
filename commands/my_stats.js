@@ -21,8 +21,8 @@ var text =
   "<i>Keep participating to rank higher!</i>";
 
 var buttons = [
-  [{ text: "➕ Create Contest", callback_data: "create_giveaway", style: "success" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  [{ title: "➕ Create Contest", text: "➕ Create Contest", command: "create_giveaway", callback_data: "create_giveaway" }],
+  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

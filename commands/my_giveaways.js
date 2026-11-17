@@ -14,8 +14,8 @@ if (!my_list || my_list.length === 0) {
     "Naya contest shuru karne ke liye neeche button dabayein!";
   
   Bot.sendInlineKeyboard([
-    [{ text: "➕ Create Contest", callback_data: "create_giveaway", style: "success" }],
-    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+    [{ title: "➕ Create Contest", text: "➕ Create Contest", command: "create_giveaway", callback_data: "create_giveaway" }],
+    [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
   ], empty_text, { parse_mode: "HTML" });
   return;
 }
@@ -43,8 +43,8 @@ for (var i = 0; i < my_list.length; i++) {
 }
 
 var buttons = [
-  [{ text: "➕ Create Another", callback_data: "create_giveaway", style: "success" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  [{ title: "➕ Create Another", text: "➕ Create Another", command: "create_giveaway", callback_data: "create_giveaway" }],
+  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

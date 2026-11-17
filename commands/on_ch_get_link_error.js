@@ -11,7 +11,7 @@ var text =
   "<i>Kripya check karein ki Bot channel me Admin hai aur 'Invite Users via Links' permission ON hai.</i>";
 
 var buttons = [
-  [{ text: "🔙 Back to Tools", callback_data: "ch_panel", style: "primary" }]
+  [{ title: "🔙 Back to Tools", text: "🔙 Back to Tools", command: "ch_panel", callback_data: "ch_panel" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
