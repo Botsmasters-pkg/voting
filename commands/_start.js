@@ -1,6 +1,6 @@
 /*CMD
   command: /start
-  help: Start the bot & show main menu with auto-detected bot username
+  help: Start the bot & show main menu with colored primary and success buttons
   need_reply: false
   aliases: 
 CMD*/
@@ -8,11 +8,9 @@ CMD*/
 // ===== CONFIG =====
 var OWNER_ID = 8710308658;
 
-// Dynamic Bot Username (Automatic detect token se)
 var cached_uname = Bot.getProperty("bot_username");
 var BOT_USERNAME = (bot && bot.name) ? bot.name.replace("@", "") : (cached_uname || "");
 
-// Agar cache me nahi hai to Telegram API se automatically fetch karein
 if (!cached_uname) {
   Api.getMe({ on_result: "on_save_bot_info" });
 }
@@ -40,7 +38,6 @@ if (params) {
   }
 }
 
-// Exactly like original Python bot welcome text
 var welcome_text = 
   "✨ <b>WELCOME TO TOXIC VOTE GIVEAWAY BOT</b> ✨\n\n" +
   "<i>☄️ Create Powerful Vote Giveaways</i>\n" +
@@ -51,28 +48,45 @@ var welcome_text =
 
 var connect_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?startchannel=true&admin=post_messages") : "https://t.me";
 
-// Exactly like original Python bot user menu
 var buttons = [
   [
-    { title: "CONNECT", text: "CONNECT", url: connect_url, style: "success" }
+    { text: "CONNECT", url: connect_url, style: "success" }
   ],
   [
-    { title: "CREATE", text: "CREATE", command: "create_giveaway", callback_data: "create_giveaway", style: "success" },
-    { title: "MANAGE", text: "MANAGE", command: "my_giveaways", callback_data: "my_giveaways", style: "primary" }
+    { text: "CREATE", callback_data: "create_giveaway", style: "primary" },
+    { text: "MANAGE", callback_data: "my_giveaways", style: "primary" }
   ],
   [
-    { title: "MY STATS", text: "MY STATS", command: "my_stats", callback_data: "my_stats", style: "primary" },
-    { title: "HOW IT WORKS", text: "HOW IT WORKS", command: "how_it_works", callback_data: "how_it_works", style: "primary" }
+    { text: "MY STATS", callback_data: "my_stats", style: "primary" },
+    { text: "HOW IT WORKS", callback_data: "how_it_works", style: "primary" }
   ],
   [
-    { title: "👨‍💻 Developer", text: "👨‍💻 Developer", url: "https://t.me/codevexa", style: "success" }
+    { text: "👨‍💻 Developer", url: "https://t.me/codevexa", style: "success" }
   ]
 ];
 
 if (uid == OWNER_ID) {
   buttons.push([
-    { title: "⚙️ ADMIN PANEL", text: "⚙️ ADMIN PANEL", command: "/admin", callback_data: "/admin", style: "primary" }
+    { text: "⚙️ ADMIN PANEL", callback_data: "/admin", style: "primary" }
   ]);
 }
 
-Bot.sendInlineKeyboard(buttons, welcome_text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+// Direct Telegram API call to render vibrant success (green) & primary (blue) buttons
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: welcome_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: welcome_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}

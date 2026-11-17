@@ -1,6 +1,6 @@
 /*CMD
   command: /admin
-  help: Admin panel control dashboard
+  help: Admin panel control dashboard with success and primary colored buttons
   need_reply: false
   aliases: admin
 CMD*/
@@ -24,19 +24,36 @@ var text =
 
 var buttons = [
   [
-    { title: "📊 Platform Stats", text: "📊 Platform Stats", command: "admin_stats", callback_data: "admin_stats", style: "primary" },
-    { title: "📢 Broadcast", text: "📢 Broadcast", command: "admin_broadcast", callback_data: "admin_broadcast", style: "success" }
+    { text: "📊 Platform Stats", callback_data: "admin_stats", style: "primary" },
+    { text: "📢 Broadcast", callback_data: "admin_broadcast", style: "success" }
   ],
   [
-    { title: "🎛 Channel Control Suite", text: "🎛 Channel Control Suite", command: "channel_tools", callback_data: "channel_tools", style: "success" }
+    { text: "🎛 Channel Control Suite", callback_data: "channel_tools", style: "success" }
   ],
   [
-    { title: "🔄 Refresh Bot Info", text: "🔄 Refresh Bot Info", command: "cmd_detect_bot", callback_data: "cmd_detect_bot", style: "success" },
-    { title: "🚫 Ban / Unban User", text: "🚫 Ban / Unban User", command: "admin_ban", callback_data: "admin_ban", style: "primary" }
+    { text: "🔄 Refresh Bot Info", callback_data: "cmd_detect_bot", style: "success" },
+    { text: "🚫 Ban / Unban User", callback_data: "admin_ban", style: "primary" }
   ],
   [
-    { title: "🔙 Exit Admin Panel", text: "🔙 Exit Admin Panel", command: "/start", callback_data: "/start", style: "primary" }
+    { text: "🔙 Exit Admin Panel", callback_data: "/start", style: "primary" }
   ]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}

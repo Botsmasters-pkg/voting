@@ -24,19 +24,36 @@ var text =
 
 var buttons = [
   [
-    { title: "🔗 Get Channel Link", text: "🔗 Get Channel Link", command: "ch_get_link", callback_data: "ch_get_link", style: "primary" }
+    { text: "🔗 Get Channel Link", callback_data: "ch_get_link", style: "success" }
   ],
   [
-    { title: "⬆️ Promote User", text: "⬆️ Promote User", command: "ch_promote", callback_data: "ch_promote", style: "success" },
-    { title: "⬇️ Demote User", text: "⬇️ Demote User", command: "ch_demote", callback_data: "ch_demote", style: "primary" }
+    { text: "⬆️ Promote User", callback_data: "ch_promote", style: "success" },
+    { text: "⬇️ Demote User", callback_data: "ch_demote", style: "primary" }
   ],
   [
-    { title: "🗑 Delete Message", text: "🗑 Delete Message", command: "ch_delete_msg", callback_data: "ch_delete_msg", style: "primary" }
+    { text: "🗑 Delete Message", callback_data: "ch_delete_msg", style: "primary" }
   ],
   [
-    { title: "🔄 Switch Channel", text: "🔄 Switch Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt", style: "primary" },
-    { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin", style: "primary" }
+    { text: "🔄 Switch Channel", callback_data: "ch_select_prompt", style: "primary" },
+    { text: "🔙 Back to Admin", callback_data: "/admin", style: "primary" }
   ]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}

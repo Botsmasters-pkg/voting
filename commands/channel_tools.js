@@ -1,6 +1,6 @@
 /*CMD
   command: channel_tools
-  help: Channel admin tools menu (Get Link, Promote, Demote, Delete Message)
+  help: Channel admin tools menu
   need_reply: false
 CMD*/
 
@@ -25,16 +25,33 @@ var buttons = [];
 if (active_channel) {
   text += "📌 <b>Current Active Channel:</b> <code>" + active_channel + "</code>\n\n";
   buttons.push([
-    { title: "⚙️ Open Active Channel Panel", text: "⚙️ Open Active Channel Panel", command: "ch_panel", callback_data: "ch_panel", style: "success" }
+    { text: "⚙️ Open Active Channel Panel", callback_data: "ch_panel", style: "success" }
   ]);
 }
 
 buttons.push([
-  { title: "➕ Select / Change Channel", text: "➕ Select / Change Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt", style: "primary" }
+  { text: "➕ Select / Change Channel", callback_data: "ch_select_prompt", style: "success" }
 ]);
 
 buttons.push([
-  { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin", style: "primary" }
+  { text: "🔙 Back to Admin", callback_data: "/admin", style: "primary" }
 ]);
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}

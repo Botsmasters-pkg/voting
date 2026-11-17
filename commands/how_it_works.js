@@ -9,7 +9,7 @@ var text =
   "<b>1️⃣ Step 1: Bot ko Channel me Admin banayein</b>\n" +
   "• Bot ko apne Telegram Channel me add karein aur <i>Post Messages</i> & <i>Edit Messages</i> ki permission dein.\n\n" +
   "<b>2️⃣ Step 2: Contest Create karein</b>\n" +
-  "• Bot me <b>➕ Create Contest</b> button dabayein.\n" +
+  "• Bot me <b>CREATE</b> button dabayein.\n" +
   "• Channel username aur Contest ka Title/Prize enter karein.\n\n" +
   "<b>3️⃣ Step 3: Participants Join karenge</b>\n" +
   "• Channel me Contest announcement post ho jayegi.\n" +
@@ -20,8 +20,25 @@ var text =
   "• Bot ensure karta hai ki ek user ek hi vote de sake!";
 
 var buttons = [
-  [{ title: "➕ Start Now", text: "➕ Start Now", command: "create_giveaway", callback_data: "create_giveaway", style: "success" }],
-  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
+  [{ text: "CREATE", callback_data: "create_giveaway", style: "success" }],
+  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}
