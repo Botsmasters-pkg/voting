@@ -1,6 +1,6 @@
 /*CMD
   command: step_giveaway_channel
-  help: Process channel identifier input with auto-detection and live chat verification
+  help: Process channel identifier input with auto-detection, live chat verification, and 1-active-contest-per-channel rule
   need_reply: true
 CMD*/
 
@@ -26,6 +26,51 @@ function getPropJson(name, default_val) {
 }
 
 var channel_input = message.trim();
+var all_giveaways = getPropJson("all_giveaways", {});
+var target_lower = channel_input.toLowerCase();
+var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;
+
+// Check 1 Active Contest Per Channel Rule
+var existing_active = null;
+
+for (var gid in all_giveaways) {
+  var g = all_giveaways[gid];
+  if (g && g.status === "active") {
+    var g_ch = String(g.channel || "").toLowerCase();
+    var g_uname = g_ch.startsWith("@") ? g_ch.substring(1) : g_ch;
+    
+    if (g_ch === target_lower || (target_uname && g_uname === target_uname)) {
+      existing_active = g;
+      break;
+    }
+  }
+}
+
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+if (existing_active) {
+  var error_msg = 
+    "🚫 <b>IS CHANNEL ME PEHLE SE CONTEST ACTIVE HAI!</b> 🚫\n\n" +
+    "📢 <b>Channel:</b> <code>" + channel_input + "</code>\n" +
+    "🏆 <b>Active Contest:</b> " + existing_active.title + "\n" +
+    "🆔 <b>Contest ID:</b> <code>#" + existing_active.id + "</code>\n\n" +
+    "⚠️ <i>Ek channel me ek time par sirf ek hi contest chal sakta hai.</i>\n\n" +
+    "Naya contest shuru karne se pehle puraana contest <b>END</b> karein!";
+
+  var error_buttons = [
+    [{ text: "⚙️ Manage Active Contest", callback_data: "manage_giveaway " + existing_active.id, style: "primary" }],
+    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  ];
+
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: error_msg,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: error_buttons }
+  });
+  return;
+}
+
 User.setProperty("temp_giveaway_channel", channel_input, "string");
 
 // Immediately auto-register channel into connected_channels safely
@@ -59,8 +104,6 @@ var text =
 var buttons = [
   [{ text: "🔙 Cancel", callback_data: "/start", style: "primary" }]
 ];
-
-var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
 Api.sendMessage({
   chat_id: target_chat,

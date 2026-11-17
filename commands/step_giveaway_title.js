@@ -1,6 +1,6 @@
 /*CMD
   command: step_giveaway_title
-  help: Process contest title, notify owner, and publish with dynamic bot username
+  help: Process contest title, notify owner, and publish with dynamic bot username & 1-active-per-channel guard
   need_reply: true
 CMD*/
 
@@ -30,6 +30,24 @@ if (!channel_target) {
   Bot.sendMessage("⚠️ Koi channel select nahi mila. Shuru se shuru karein.");
   Bot.runCommand("/start");
   return;
+}
+
+var all_giveaways = getPropJson("all_giveaways", {});
+var target_lower = String(channel_target).toLowerCase();
+var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;
+
+// Enforce 1 active contest per channel
+for (var egid in all_giveaways) {
+  var eg = all_giveaways[egid];
+  if (eg && eg.status === "active") {
+    var eg_ch = String(eg.channel || "").toLowerCase();
+    var eg_uname = eg_ch.startsWith("@") ? eg_ch.substring(1) : eg_ch;
+    if (eg_ch === target_lower || (target_uname && eg_uname === target_uname)) {
+      Bot.sendMessage("🚫 <b>Error:</b> Is channel par pehle se active contest chal raha hai! Puraana contest END karne ke baad hi naya create karein.", { parse_mode: "HTML" });
+      Bot.runCommand("manage_giveaway " + eg.id);
+      return;
+    }
+  }
 }
 
 var title_input = message.trim();
@@ -79,7 +97,6 @@ var giveaway = {
   voted_users: {}
 };
 
-var all_giveaways = getPropJson("all_giveaways", {});
 all_giveaways[gid] = giveaway;
 Bot.setProperty("all_giveaways", all_giveaways, "json");
 
