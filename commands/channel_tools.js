@@ -25,16 +25,16 @@ var buttons = [];
 if (active_channel) {
   text += "📌 <b>Current Active Channel:</b> <code>" + active_channel + "</code>\n\n";
   buttons.push([
-    { title: "⚙️ Open Active Channel Panel", text: "⚙️ Open Active Channel Panel", command: "ch_panel", callback_data: "ch_panel" }
+    { title: "⚙️ Open Active Channel Panel", text: "⚙️ Open Active Channel Panel", command: "ch_panel", callback_data: "ch_panel", style: "success" }
   ]);
 }
 
 buttons.push([
-  { title: "➕ Select / Change Channel", text: "➕ Select / Change Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt" }
+  { title: "➕ Select / Change Channel", text: "➕ Select / Change Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt", style: "primary" }
 ]);
 
 buttons.push([
-  { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin" }
+  { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin", style: "primary" }
 ]);
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

@@ -17,7 +17,7 @@ var text =
   "Cancel karne ke liye <code>cancel</code> likhein.";
 
 var buttons = [
-  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "ch_panel", callback_data: "ch_panel" }]
+  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

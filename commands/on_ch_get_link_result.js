@@ -21,10 +21,10 @@ var text =
 
 var buttons = [
   [
-    { title: "🔗 Open Link", text: "🔗 Open Link", url: link }
+    { title: "🔗 Open Link", text: "🔗 Open Link", url: link, style: "success" }
   ],
   [
-    { title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel" }
+    { title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }
   ]
 ];
 

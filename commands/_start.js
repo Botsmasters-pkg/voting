@@ -54,24 +54,24 @@ var connect_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?startchanne
 // Exactly like original Python bot user menu
 var buttons = [
   [
-    { title: "CONNECT", text: "CONNECT", url: connect_url }
+    { title: "CONNECT", text: "CONNECT", url: connect_url, style: "success" }
   ],
   [
-    { title: "CREATE", text: "CREATE", command: "create_giveaway", callback_data: "create_giveaway" },
-    { title: "MANAGE", text: "MANAGE", command: "my_giveaways", callback_data: "my_giveaways" }
+    { title: "CREATE", text: "CREATE", command: "create_giveaway", callback_data: "create_giveaway", style: "success" },
+    { title: "MANAGE", text: "MANAGE", command: "my_giveaways", callback_data: "my_giveaways", style: "primary" }
   ],
   [
-    { title: "MY STATS", text: "MY STATS", command: "my_stats", callback_data: "my_stats" },
-    { title: "HOW IT WORKS", text: "HOW IT WORKS", command: "how_it_works", callback_data: "how_it_works" }
+    { title: "MY STATS", text: "MY STATS", command: "my_stats", callback_data: "my_stats", style: "primary" },
+    { title: "HOW IT WORKS", text: "HOW IT WORKS", command: "how_it_works", callback_data: "how_it_works", style: "primary" }
   ],
   [
-    { title: "👨‍💻 Developer", text: "👨‍💻 Developer", url: "https://t.me/codevexa" }
+    { title: "👨‍💻 Developer", text: "👨‍💻 Developer", url: "https://t.me/codevexa", style: "success" }
   ]
 ];
 
 if (uid == OWNER_ID) {
   buttons.push([
-    { title: "⚙️ ADMIN PANEL", text: "⚙️ ADMIN PANEL", command: "/admin", callback_data: "/admin" }
+    { title: "⚙️ ADMIN PANEL", text: "⚙️ ADMIN PANEL", command: "/admin", callback_data: "/admin", style: "primary" }
   ]);
 }
 

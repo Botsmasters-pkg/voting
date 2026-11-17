@@ -14,7 +14,7 @@ var text =
   "User ko channel me Admin permissions de di gayi hain.";
 
 var buttons = [
-  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel" }]
+  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

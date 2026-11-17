@@ -13,7 +13,7 @@ var text =
   "2. User pehle se channel me nahi hai ya ID galat hai.";
 
 var buttons = [
-  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel" }]
+  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

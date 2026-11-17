@@ -11,7 +11,7 @@ var text =
   "<i>Check karein ki bot ke paas 'Add new admins' rights hain aur user pehle se admin hai ya nahi.</i>";
 
 var buttons = [
-  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel" }]
+  [{ title: "🔙 Channel Tools", text: "🔙 Channel Tools", command: "ch_panel", callback_data: "ch_panel", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

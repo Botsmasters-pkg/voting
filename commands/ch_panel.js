@@ -24,18 +24,18 @@ var text =
 
 var buttons = [
   [
-    { title: "🔗 Get Channel Link", text: "🔗 Get Channel Link", command: "ch_get_link", callback_data: "ch_get_link" }
+    { title: "🔗 Get Channel Link", text: "🔗 Get Channel Link", command: "ch_get_link", callback_data: "ch_get_link", style: "primary" }
   ],
   [
-    { title: "⬆️ Promote User", text: "⬆️ Promote User", command: "ch_promote", callback_data: "ch_promote" },
-    { title: "⬇️ Demote User", text: "⬇️ Demote User", command: "ch_demote", callback_data: "ch_demote" }
+    { title: "⬆️ Promote User", text: "⬆️ Promote User", command: "ch_promote", callback_data: "ch_promote", style: "success" },
+    { title: "⬇️ Demote User", text: "⬇️ Demote User", command: "ch_demote", callback_data: "ch_demote", style: "primary" }
   ],
   [
-    { title: "🗑 Delete Message", text: "🗑 Delete Message", command: "ch_delete_msg", callback_data: "ch_delete_msg" }
+    { title: "🗑 Delete Message", text: "🗑 Delete Message", command: "ch_delete_msg", callback_data: "ch_delete_msg", style: "primary" }
   ],
   [
-    { title: "🔄 Switch Channel", text: "🔄 Switch Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt" },
-    { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin" }
+    { title: "🔄 Switch Channel", text: "🔄 Switch Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt", style: "primary" },
+    { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin", style: "primary" }
   ]
 ];
 

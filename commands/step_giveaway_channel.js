@@ -24,7 +24,7 @@ var text =
   "<i>Example:</i> 🎁 <b>Photo Contest 2026 - Winner gets ₹1000!</b>";
 
 var buttons = [
-  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "/start", callback_data: "/start" }]
+  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "/start", callback_data: "/start", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

@@ -24,18 +24,18 @@ var text =
 
 var buttons = [
   [
-    { title: "📊 Platform Stats", text: "📊 Platform Stats", command: "admin_stats", callback_data: "admin_stats" },
-    { title: "📢 Broadcast", text: "📢 Broadcast", command: "admin_broadcast", callback_data: "admin_broadcast" }
+    { title: "📊 Platform Stats", text: "📊 Platform Stats", command: "admin_stats", callback_data: "admin_stats", style: "primary" },
+    { title: "📢 Broadcast", text: "📢 Broadcast", command: "admin_broadcast", callback_data: "admin_broadcast", style: "success" }
   ],
   [
-    { title: "🎛 Channel Control Suite", text: "🎛 Channel Control Suite", command: "channel_tools", callback_data: "channel_tools" }
+    { title: "🎛 Channel Control Suite", text: "🎛 Channel Control Suite", command: "channel_tools", callback_data: "channel_tools", style: "success" }
   ],
   [
-    { title: "🔄 Refresh Bot Info", text: "🔄 Refresh Bot Info", command: "cmd_detect_bot", callback_data: "cmd_detect_bot" },
-    { title: "🚫 Ban / Unban User", text: "🚫 Ban / Unban User", command: "admin_ban", callback_data: "admin_ban" }
+    { title: "🔄 Refresh Bot Info", text: "🔄 Refresh Bot Info", command: "cmd_detect_bot", callback_data: "cmd_detect_bot", style: "success" },
+    { title: "🚫 Ban / Unban User", text: "🚫 Ban / Unban User", command: "admin_ban", callback_data: "admin_ban", style: "primary" }
   ],
   [
-    { title: "🔙 Exit Admin Panel", text: "🔙 Exit Admin Panel", command: "/start", callback_data: "/start" }
+    { title: "🔙 Exit Admin Panel", text: "🔙 Exit Admin Panel", command: "/start", callback_data: "/start", style: "primary" }
   ]
 ];
 

@@ -11,7 +11,7 @@ var text =
   "⚠️ <b>Dhyan dein:</b> Bot ko us channel me pehle <b>Admin</b> banana zaroori hai!";
 
 var buttons = [
-  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "/start", callback_data: "/start" }]
+  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "/start", callback_data: "/start", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

@@ -44,8 +44,8 @@ if (already_joined) {
     "Apne friends aur groups me channel post share karke votes badhayein!";
   
   Bot.sendInlineKeyboard([
-    [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats" }],
-    [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
+    [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats", style: "primary" }],
+    [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
   ], reply_text, { parse_mode: "HTML" });
   return;
 }
@@ -78,7 +78,7 @@ var card_text =
 
 var vote_button = [
   [
-    { title: "🗳 Vote - 0", text: "🗳 Vote - 0", command: "vote ", callback_data: "vote " }
+    { title: "🗳 Vote - 0", text: "🗳 Vote - 0", command: "vote ", callback_data: "vote ", style: "success" }
   ]
 ];
 
@@ -96,6 +96,6 @@ var confirm_text =
   "Aapka participant card channel me post ho gaya hai. Ab aap apne friends ko channel se vote karne ke liye bol sakte hain!";
 
 Bot.sendInlineKeyboard([
-  [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats" }],
-  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }]
+  [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats", style: "primary" }],
+  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
 ], confirm_text, { parse_mode: "HTML" });

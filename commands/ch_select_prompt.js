@@ -11,7 +11,7 @@ var text =
   "⚠️ <b>Note:</b> Bot ko channel me pehle <b>Admin</b> banana zaroori hai (with Add Admin, Delete Messages & Invite Links permissions).";
 
 var buttons = [
-  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "channel_tools", callback_data: "channel_tools" }]
+  [{ title: "🔙 Cancel", text: "🔙 Cancel", command: "channel_tools", callback_data: "channel_tools", style: "primary" }]
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
