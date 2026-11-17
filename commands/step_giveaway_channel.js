@@ -26,17 +26,28 @@ function getPropJson(name, default_val) {
 }
 
 var channel_input = message.trim();
+
+// Normalize URL or plain username to valid Telegram chat identifier (@channel or -100xxx)
+if (channel_input.indexOf("t.me/") !== -1) {
+  var uname_extracted = channel_input.split("t.me/")[1].split("/")[0].replace("@", "").trim();
+  if (uname_extracted.indexOf("+") !== 0 && uname_extracted) {
+    channel_input = "@" + uname_extracted;
+  }
+} else if (channel_input.indexOf("@") === -1 && !channel_input.startsWith("-") && isNaN(channel_input)) {
+  channel_input = "@" + channel_input;
+}
+
 var all_giveaways = getPropJson("all_giveaways", {});
 var target_lower = channel_input.toLowerCase();
 var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-// Check 1 Active Contest Per Channel Rule
+// Check 1 Active Contest Per Channel Rule (Only block if contest is currently active, ignore ended)
 var existing_active = null;
 for (var egid in all_giveaways) {
   var eg = all_giveaways[egid];
-  if (eg && (eg.status === "active" || !eg.ended)) {
+  if (eg && !eg.ended && eg.status !== "ended") {
     var eg_ch = String(eg.channel || "").toLowerCase();
     var eg_uname = eg_ch.startsWith("@") ? eg_ch.substring(1) : eg_ch;
     if (eg_ch === target_lower || (target_uname && eg_uname === target_uname)) {

@@ -36,10 +36,10 @@ var all_giveaways = getPropJson("all_giveaways", {});
 var target_lower = String(channel_target).toLowerCase();
 var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;
 
-// Enforce 1 active contest per channel
+// Enforce 1 active contest per channel (Ignore ended contests)
 for (var egid in all_giveaways) {
   var eg = all_giveaways[egid];
-  if (eg && (eg.status === "active" || !eg.ended)) {
+  if (eg && !eg.ended && eg.status !== "ended") {
     var eg_ch = String(eg.channel || "").toLowerCase();
     var eg_uname = eg_ch.startsWith("@") ? eg_ch.substring(1) : eg_ch;
     if (eg_ch === target_lower || (target_uname && eg_uname === target_uname)) {
