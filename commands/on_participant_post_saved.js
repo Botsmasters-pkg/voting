@@ -43,8 +43,9 @@ if (!gid && user) {
 }
 
 var res = (options && options.result) ? options.result : (options || {});
-var msg_id = res.message_id ? parseInt(res.message_id, 10) : null;
-var chat_id = (res.chat && res.chat.id) ? res.chat.id : null;
+if (res && res.result) res = res.result;
+var msg_id = (res && res.message_id) ? parseInt(res.message_id, 10) : null;
+var chat_id = (res && res.chat && res.chat.id) ? res.chat.id : null;
 
 // Fallback: Extract gid and participant_uid directly from callback_data or message text
 if ((!gid || !participant_uid) && res) {

@@ -5,10 +5,10 @@
   aliases: admin
 CMD*/
 
-var OWNER_ID = 8710308658;
+var ADMIN_IDS = [8710308658, 8805712913];
 var uid = user.telegramid;
 
-if (uid != OWNER_ID) {
+if (ADMIN_IDS.indexOf(Number(uid)) === -1) {
   Bot.sendMessage("🚫 <b>Access Denied:</b> Aap is bot ke admin nahi hain.", { parse_mode: "HTML" });
   return;
 }

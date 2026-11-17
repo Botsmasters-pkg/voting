@@ -5,6 +5,7 @@
 CMD*/
 
 var OWNER_ID = 8710308658;
+var ADMIN_IDS = [8710308658, 8805712913];
 
 if (request && request.callback_query) {
   Api.answerCallbackQuery({
@@ -32,7 +33,7 @@ for (var gid in all_giveaways) {
   var g = all_giveaways[gid];
   if (!g) continue;
   var is_creator = (g.creator == uid || g.creator_id == uid || String(g.creator) === String(uid) || String(g.creator_id) === String(uid));
-  var is_owner = (uid == OWNER_ID || String(uid) === String(OWNER_ID));
+  var is_owner = (ADMIN_IDS.indexOf(Number(uid)) !== -1);
   var is_active = (!g.ended && g.status !== "ended");
 
   if ((is_creator || is_owner) && is_active) {

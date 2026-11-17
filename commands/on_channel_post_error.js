@@ -12,8 +12,15 @@ if (err_str.indexOf("message is not modified") !== -1 || err_str.indexOf("MESSAG
   return;
 }
 
-Api.sendMessage({
-  chat_id: 8710308658,
-  text: "⚠️ <b>Warning:</b> Bot channel me message post/update nahi kar paya.\n\n<i>Check karein ki bot channel me added hai aur Post/Edit Messages ki permission hai.</i>\n\nDetail: <code>" + err_str + "</code>",
-  parse_mode: "HTML"
-});
+var notify_chats = [8710308658, 8805712913];
+if (user && user.telegramid && notify_chats.indexOf(user.telegramid) === -1) {
+  notify_chats.push(user.telegramid);
+}
+
+for (var i = 0; i < notify_chats.length; i++) {
+  Api.sendMessage({
+    chat_id: notify_chats[i],
+    text: "⚠️ <b>Channel Post/Edit Error:</b>\n\nDetail: <code>" + err_str + "</code>\n\n<i>Tip: Bot ko channel me <b>Edit Messages of Others</b> admin permission zaroor dein!</i>",
+    parse_mode: "HTML"
+  });
+}

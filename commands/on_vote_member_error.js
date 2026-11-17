@@ -99,7 +99,7 @@ User.setProperty("votes_given", votes_given + 1, "integer");
 
 // UPDATE BUTTON IN CHANNEL IN REAL-TIME
 var target_channel = cb_chat_id || giveaway.channel_chat_id || giveaway.channel;
-var target_mid = cb_message_id || giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)];
+var target_mid = cb_message_id || (giveaway.vote_messages && (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)] || giveaway.vote_messages[Number(participant_id)]));
 
 if (target_channel && target_mid) {
   var updated_button = [

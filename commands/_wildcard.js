@@ -37,10 +37,16 @@ if (request && request.chat_join_request) {
 
 // 0. Handle Dynamic Callback Queries
 if (request && request.callback_query && request.callback_query.data) {
+  var data = request.callback_query.data;
+
+  // Let vote command handle its own callbacks and alerts directly without interference
+  if (data.indexOf("vote ") === 0 || data.indexOf("vote_") === 0) {
+    return;
+  }
+
   Api.answerCallbackQuery({
     callback_query_id: request.callback_query.id
   });
-  var data = request.callback_query.data;
 
   if (data === "admin_fsub") {
     Bot.runCommand("admin_fsub");

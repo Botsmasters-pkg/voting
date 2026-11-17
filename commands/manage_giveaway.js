@@ -5,6 +5,7 @@
 CMD*/
 
 var OWNER_ID = 8710308658;
+var ADMIN_IDS = [8710308658, 8805712913];
 
 if (request && request.callback_query) {
   Api.answerCallbackQuery({
@@ -58,7 +59,7 @@ if (!giveaway) {
 
 var uid = user.telegramid;
 var is_creator = (giveaway.creator == uid || giveaway.creator_id == uid || String(giveaway.creator) === String(uid) || String(giveaway.creator_id) === String(uid));
-var is_owner = (uid == OWNER_ID || String(uid) === String(OWNER_ID));
+var is_owner = (ADMIN_IDS.indexOf(Number(uid)) !== -1);
 
 if (!is_creator && !is_owner) {
   Bot.sendMessage("🚫 Access Denied: Aap is giveaway ke creator nahi hain.");
