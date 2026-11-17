@@ -25,10 +25,18 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var raw_params = (params || "").trim().split(" ");
+var raw_params = (params || "").trim().split(/\s+/);
 var gid = raw_params[0];
 var participant_id = raw_params[1];
 var voter_id = user.telegramid;
+
+if (!gid || !participant_id) {
+  var pctx = getPropJson("pending_vote_context_" + voter_id, null);
+  if (pctx) {
+    gid = pctx.gid;
+    participant_id = pctx.target_uid;
+  }
+}
 
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
@@ -39,10 +47,12 @@ if (!giveaway) {
 }
 
 giveaway.vote_counts = giveaway.vote_counts || {};
+giveaway.vote_records = giveaway.vote_records || {};
 giveaway.voted_users = giveaway.voted_users || {};
 giveaway.voted_users[participant_id] = giveaway.voted_users[participant_id] || [];
 
-if (giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
+var vote_key = voter_id + "_" + participant_id;
+if (giveaway.vote_records[vote_key] || giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
   answer("⚠️ Aap pehle hi vote de chuke hain!", true);
   return;
 }
@@ -50,6 +60,11 @@ if (giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
 var current_votes = (giveaway.vote_counts[participant_id] || 0) + 1;
 giveaway.vote_counts[participant_id] = current_votes;
 giveaway.voted_users[participant_id].push(voter_id);
+giveaway.vote_records[vote_key] = {
+  voter_id: voter_id,
+  target_id: participant_id,
+  voted_at: new Date().toISOString()
+};
 
 all_giveaways[gid] = giveaway;
 Bot.setProperty("all_giveaways", all_giveaways, "json");
@@ -63,7 +78,7 @@ if (request && request.callback_query && request.callback_query.message) {
 
   var updated_button = [
     [
-      { text: "🗳 Vote (" + current_votes + ")", callback_data: "vote " + gid + " " + participant_id, style: "success" }
+      { text: "Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
     ]
   ];
 
@@ -73,5 +88,7 @@ if (request && request.callback_query && request.callback_query.message) {
     reply_markup: { inline_keyboard: updated_button }
   });
 }
+
+answer("🎉 Vote recorded! Total: " + current_votes, false);
 
 answer("✅ Vote registered! Total: " + current_votes, false);

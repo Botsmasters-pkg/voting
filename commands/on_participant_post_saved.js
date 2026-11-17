@@ -1,0 +1,36 @@
+/*CMD
+  command: on_participant_post_saved
+  help: Callback when participant card is posted in channel - saves message_id so Add/Remove votes updates the channel button
+  need_reply: false
+CMD*/
+
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
+var raw_params = (params || "").trim().split(/\s+/);
+var gid = raw_params[0];
+var participant_uid = raw_params[1];
+
+if (options && options.result && options.result.message_id && gid && participant_uid) {
+  var all_giveaways = getPropJson("all_giveaways", {});
+  var giveaway = all_giveaways[gid];
+  if (giveaway) {
+    giveaway.vote_messages = giveaway.vote_messages || {};
+    giveaway.vote_messages[participant_uid] = options.result.message_id;
+    all_giveaways[gid] = giveaway;
+    Bot.setProperty("all_giveaways", all_giveaways, "json");
+  }
+}
+
+// Forward to on_channel_post_success to ensure channel auto-connection continues
+Bot.run({
+  command: "on_channel_post_success",
+  options: options
+});

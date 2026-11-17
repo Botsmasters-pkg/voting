@@ -89,8 +89,8 @@ if (target_channel) {
   Api.getChatMember({
     chat_id: target_channel,
     user_id: voter_id,
-    on_result: "on_vote_member_check",
-    on_error: "on_vote_member_error"
+    on_result: "on_vote_member_check " + gid + " " + target_uid,
+    on_error: "on_vote_member_error " + gid + " " + target_uid
   });
   return;
 }

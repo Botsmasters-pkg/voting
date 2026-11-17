@@ -108,6 +108,7 @@ var conf_text =
   "<i>Ab sabhi users ko bot access karne se pehle ise 3x3 JOIN button grid me join karna hoga.</i>";
 
 var buttons = [
+  [{ text: "📋 View Channel List", callback_data: "admin_fsub_list", style: "primary" }],
   [{ text: "🔙 Back to F-Sub Channels", callback_data: "admin_fsub", style: "primary" }]
 ];
 

@@ -164,7 +164,7 @@ if (action === "join") {
     text: card_text,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: card_buttons },
-    on_result: "on_channel_post_success"
+    on_result: "on_participant_post_saved " + gid + " " + uid
   });
 
   all_giveaways[gid] = giveaway;

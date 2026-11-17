@@ -125,12 +125,20 @@ if (request && request.callback_query && request.callback_query.data) {
     Bot.run({ command: "cmd_end_giveaway", options: { giveaway_id: egid } });
     return;
   }
+  if (data.indexOf("join_giveaway ") === 0) {
+    Bot.run({ command: "join_giveaway", params: data.replace("join_giveaway ", "") });
+    return;
+  }
+  if (data.indexOf("vote ") === 0) {
+    Bot.run({ command: "vote", params: data.replace("vote ", "") });
+    return;
+  }
   if (data.indexOf("retry_join_") === 0) {
     var rjgid = data.replace("retry_join_", "");
     Bot.run({ command: "join_giveaway", options: { giveaway_id: rjgid, action: "retry" } });
     return;
   }
-  if (data.indexOf("join_") === 0) {
+  if (data.indexOf("join_") === 0 && data.indexOf("join_giveaway") !== 0) {
     var jgid = data.replace("join_", "");
     Bot.run({ command: "join_giveaway", options: { giveaway_id: jgid, action: "join" } });
     return;

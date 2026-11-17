@@ -1,6 +1,6 @@
 /*CMD
   command: admin_fsub_prompt
-  help: Prompt admin for public, private, or private request force channel
+  help: Prompt admin for public channel, or initiate 2-step Chat ID then Link for private/request channels
   need_reply: false
 CMD*/
 
@@ -17,26 +17,30 @@ var mode = (params || "public").trim().toLowerCase();
 User.setProperty("fsub_add_mode", mode, "string");
 
 var text = "";
+var next_command = "";
+
 if (mode === "public") {
   text = 
     "🌐 <b>ADD PUBLIC FORCE CHANNEL</b> 🌐\n\n" +
     "Channel ka direct link ya <code>@username</code> bhejein:\n\n" +
     "<i>Example:</i> <code>https://t.me/MyChannel</code> ya <code>@MyChannel</code>\n\n" +
     "⚠️ <i>Bot ka is channel me Admin hona zaroori hai.</i>";
+  next_command = "step_fsub_add";
 } else if (mode === "private") {
   text = 
-    "🔒 <b>ADD PRIVATE FORCE CHANNEL</b> 🔒\n\n" +
-    "Channel ka <b>Invite Link</b> aur <b>Chat ID</b> space dekar bhejein:\n\n" +
-    "<i>Format:</i> <code>INVITE_LINK CHAT_ID</code>\n" +
-    "<i>Example:</i> <code>https://t.me/+AbCdEfGh -1001234567890</code>\n\n" +
-    "⚠️ <i>Bot ko channel me Admin banayein taaki bot membership verify kar sake.</i>";
+    "🔒 <b>ADD PRIVATE FORCE CHANNEL (Step 1/2)</b> 🔒\n\n" +
+    "Pehle channel ka <b>Chat ID</b> bhejein:\n\n" +
+    "<i>Example:</i> <code>-1001234567890</code>\n\n" +
+    "⚠️ <i>Chat ID aane ke baad bot aapse channel ka Invite Link mangega.</i>";
+  next_command = "step_fsub_chat_id";
 } else if (mode === "request") {
   text = 
-    "🟡 <b>ADD PRIVATE REQUEST CHANNEL (Join Request)</b> 🟡\n\n" +
-    "Channel ka <b>Join Request Link</b> aur <b>Chat ID</b> space dekar bhejein:\n\n" +
-    "<i>Format:</i> <code>REQUEST_LINK CHAT_ID</code>\n" +
-    "<i>Example:</i> <code>https://t.me/+JoinReqLink -1001234567890</code>\n\n" +
-    "✨ <b>Special Feature:</b> <i>Is channel me user ka request sirf pending bhi rahega to bhi turant <b>VERIFIED</b> mana jayega (Admin ke approval ka wait nahi karna hoga)!</i>";
+    "🟡 <b>ADD REQUEST CHANNEL (Step 1/2)</b> 🟡\n\n" +
+    "Pehle channel ka <b>Chat ID</b> bhejein:\n\n" +
+    "<i>Example:</i> <code>-1001234567890</code>\n\n" +
+    "✨ <b>Special Feature:</b> <i>Is channel me user ka join request pending rahega to bhi turant <b>VERIFIED</b> mana jayega!</i>\n" +
+    "⚠️ <i>Chat ID aane ke baad bot aapse Join Request Link mangega.</i>";
+  next_command = "step_fsub_chat_id";
 }
 
 var buttons = [
@@ -62,4 +66,4 @@ if (request && request.callback_query && request.callback_query.message) {
   });
 }
 
-Bot.runCommand("step_fsub_add");
+Bot.runCommand(next_command);
