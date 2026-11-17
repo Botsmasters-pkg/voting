@@ -39,6 +39,10 @@ if (request && request.callback_query && request.callback_query.data) {
     Bot.runCommand("create_giveaway");
     return;
   }
+  if (data === "admin_giveaways") {
+    Bot.runCommand("admin_giveaways");
+    return;
+  }
   if (data === "my_giveaways") {
     Bot.runCommand("my_giveaways");
     return;

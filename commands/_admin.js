@@ -30,6 +30,12 @@ if (!detected_uname) {
   });
 }
 
+if (request && request.callback_query) {
+  Api.answerCallbackQuery({
+    callback_query_id: request.callback_query.id
+  });
+}
+
 var text = 
   "⚡ <b>TOXIC VOTING BOT - ADMIN DASHBOARD</b> ⚡\n\n" +
   "Welcome back, <b>Admin (@codevexa)</b>!\n\n" +
@@ -43,10 +49,13 @@ var buttons = [
     { text: "📢 Broadcast", callback_data: "admin_broadcast", style: "success" }
   ],
   [
-    { text: "🎛 Channel Control Suite", callback_data: "channel_tools", style: "success" }
+    { text: "🏆 All Contests & Giveaways", callback_data: "admin_giveaways", style: "success" }
   ],
   [
-    { text: "🔄 Refresh Bot Info", callback_data: "cmd_detect_bot", style: "success" },
+    { text: "🎛 Channel Control Suite", callback_data: "channel_tools", style: "primary" }
+  ],
+  [
+    { text: "🔄 Refresh Bot Info", callback_data: "cmd_detect_bot", style: "primary" },
     { text: "🚫 Ban / Unban User", callback_data: "admin_ban", style: "primary" }
   ],
   [

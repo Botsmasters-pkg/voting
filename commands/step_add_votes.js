@@ -85,7 +85,7 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 if (giveaway.vote_messages && giveaway.vote_messages[target_uid] && giveaway.channel) {
   var new_markup = {
     inline_keyboard: [[
-      { text: "Vote - " + new_votes, callback_data: "vote_" + gid + "_" + target_uid, style: "success" }
+      { text: "Vote - " + new_votes, callback_data: "vote " + gid + " " + target_uid, style: "success" }
     ]]
   };
   Api.editMessageReplyMarkup({
@@ -97,7 +97,7 @@ if (giveaway.vote_messages && giveaway.vote_messages[target_uid] && giveaway.cha
 
 var reply_text = "💎 Added +" + votes + " votes!\n<b>New Total:</b> " + new_votes;
 var buttons = [
-  [{ text: "BACK", callback_data: "manage_" + gid, style: "primary" }]
+  [{ text: "BACK", callback_data: "manage_giveaway " + gid, style: "primary" }]
 ];
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;

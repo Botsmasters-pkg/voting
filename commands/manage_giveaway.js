@@ -94,11 +94,19 @@ var buttons = [
   ],
   [
     { text: "END GIVEAWAY", callback_data: "cmd_end_giveaway " + gid, style: "danger" }
-  ],
-  [
-    { text: "BACK", callback_data: "my_giveaways", style: "primary" }
   ]
 ];
+
+if (is_owner) {
+  buttons.push([
+    { text: "🔙 All Contests", callback_data: "admin_giveaways", style: "primary" },
+    { text: "⚙️ Admin Dashboard", callback_data: "/admin", style: "primary" }
+  ]);
+} else {
+  buttons.push([
+    { text: "BACK", callback_data: "my_giveaways", style: "primary" }
+  ]);
+}
 
 if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageText({
