@@ -36,4 +36,4 @@ if (idx !== -1) {
   Bot.sendMessage("🚫 User <code>" + target_id + "</code> ko <b>BANNED</b> kar diya gaya hai.", { parse_mode: "HTML" });
 }
 
-Bot.runCommand("/admin");\n
+Bot.runCommand("/admin");

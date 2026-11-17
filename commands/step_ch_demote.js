@@ -34,4 +34,4 @@ Api.promoteChatMember({
   can_promote_members: false,
   on_result: "on_ch_demote_result " + target_uid,
   on_error: "on_ch_demote_error " + target_uid
-});\n
+});

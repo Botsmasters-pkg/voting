@@ -28,4 +28,4 @@ var buttons = [
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
-Bot.runCommand("step_giveaway_title");\n
+Bot.runCommand("step_giveaway_title");

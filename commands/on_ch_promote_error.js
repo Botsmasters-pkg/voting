@@ -16,4 +16,4 @@ var buttons = [
   [{ text: "🔙 Channel Tools", callback_data: "ch_panel", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });\n
+Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

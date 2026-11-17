@@ -77,4 +77,4 @@ if (uid == OWNER_ID) {
   ]);
 }
 
-Bot.sendInlineKeyboard(buttons, welcome_text, { parse_mode: "HTML" });\n
+Bot.sendInlineKeyboard(buttons, welcome_text, { parse_mode: "HTML" });

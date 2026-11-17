@@ -40,4 +40,4 @@ var buttons = [
   [{ text: "🔙 Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });\n
+Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

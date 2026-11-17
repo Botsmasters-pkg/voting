@@ -17,4 +17,4 @@ var text =
   "Ya cancel karne ke liye <code>cancel</code> type karein.";
 
 Bot.sendMessage(text, { parse_mode: "HTML" });
-Bot.runCommand("step_admin_broadcast");\n
+Bot.runCommand("step_admin_broadcast");

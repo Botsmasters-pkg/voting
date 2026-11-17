@@ -8,4 +8,4 @@ Api.getMe({
   on_result: "on_save_bot_info"
 });
 Bot.sendMessage("🔄 Token ke anusaar Bot Username re-detect ho raha hai...");
-Bot.runCommand("/admin");\n
+Bot.runCommand("/admin");

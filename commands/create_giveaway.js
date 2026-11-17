@@ -15,4 +15,4 @@ var buttons = [
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
-Bot.runCommand("step_giveaway_channel");\n
+Bot.runCommand("step_giveaway_channel");

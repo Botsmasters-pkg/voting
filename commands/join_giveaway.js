@@ -98,4 +98,4 @@ var confirm_text =
 Bot.sendInlineKeyboard([
   [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
   [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
-], confirm_text, { parse_mode: "HTML" });\n
+], confirm_text, { parse_mode: "HTML" });

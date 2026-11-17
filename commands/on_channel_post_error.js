@@ -5,4 +5,4 @@
 CMD*/
 
 var err = options && options.error ? options.error : "Unknown error";
-Bot.sendMessage("⚠️ <b>Warning:</b> Bot channel me message post nahi kar paya.\n\n<i>Check karein ki bot channel me added hai aur Post Messages ki permission hai.</i>\n\nDetail: " + JSON.stringify(err), { parse_mode: "HTML" });\n
+Bot.sendMessage("⚠️ <b>Warning:</b> Bot channel me message post nahi kar paya.\n\n<i>Check karein ki bot channel me added hai aur Post Messages ki permission hai.</i>\n\nDetail: " + JSON.stringify(err), { parse_mode: "HTML" });

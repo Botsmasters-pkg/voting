@@ -25,4 +25,4 @@ if (my_channels.indexOf(ch_input) === -1) {
 }
 
 Bot.sendMessage("✅ <b>Channel Selected:</b> <code>" + ch_input + "</code>", { parse_mode: "HTML" });
-Bot.runCommand("ch_panel");\n
+Bot.runCommand("ch_panel");

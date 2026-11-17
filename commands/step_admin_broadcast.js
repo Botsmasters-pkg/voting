@@ -36,4 +36,4 @@ for (var i = 0; i < all_users.length; i++) {
 }
 
 Bot.sendMessage("✅ <b>Broadcast Completed!</b>\n\nMessage bhej diya gaya: <code>" + sent_count + "</code> users ko.", { parse_mode: "HTML" });
-Bot.runCommand("/admin");\n
+Bot.runCommand("/admin");

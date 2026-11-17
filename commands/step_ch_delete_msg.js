@@ -38,4 +38,4 @@ Api.deleteMessage({
   message_id: target_mid,
   on_result: "on_ch_delete_msg_result " + target_mid,
   on_error: "on_ch_delete_msg_error " + target_mid
-});\n
+});

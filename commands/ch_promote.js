@@ -22,4 +22,4 @@ var buttons = [
 ];
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });
-Bot.runCommand("step_ch_promote");\n
+Bot.runCommand("step_ch_promote");

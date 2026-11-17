@@ -20,4 +20,4 @@ var text =
   "Cancel karne ke liye <code>cancel</code> type karein.";
 
 Bot.sendMessage(text, { parse_mode: "HTML" });
-Bot.runCommand("step_admin_ban");\n
+Bot.runCommand("step_admin_ban");

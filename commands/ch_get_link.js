@@ -18,4 +18,4 @@ Api.createChatInviteLink({
   name: "Bot Invite Link",
   on_result: "on_ch_get_link_result",
   on_error: "on_ch_get_link_error"
-});\n
+});

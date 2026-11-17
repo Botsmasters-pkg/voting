@@ -36,4 +36,4 @@ var buttons = [
   ]
 ];
 
-Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });\n
+Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

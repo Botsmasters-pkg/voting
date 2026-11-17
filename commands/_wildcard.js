@@ -37,4 +37,4 @@ if (request && request.my_chat_member) {
       parse_mode: "HTML"
     });
   }
-}\n
+}

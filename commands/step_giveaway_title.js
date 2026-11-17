@@ -111,4 +111,4 @@ var buttons = [
   [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, success_text, { parse_mode: "HTML" });\n
+Bot.sendInlineKeyboard(buttons, success_text, { parse_mode: "HTML" });

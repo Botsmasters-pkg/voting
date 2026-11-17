@@ -48,4 +48,4 @@ Api.getChatMember({
   user_id: voter_id,
   on_result: "on_vote_member_check " + gid + " " + participant_id,
   on_error: "on_vote_member_error " + gid + " " + participant_id
-});\n
+});

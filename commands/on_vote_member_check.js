@@ -72,4 +72,4 @@ if (request && request.callback_query && request.callback_query.message) {
 Bot.answerCallbackQuery({
   message: "✅ Vote successfully registered! Total Votes: " + current_votes,
   alert: false
-});\n
+});
