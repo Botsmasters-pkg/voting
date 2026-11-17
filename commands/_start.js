@@ -45,8 +45,95 @@ if (all_users.indexOf(uid) === -1) {
   User.setProperty("giveaways_created", 0, "integer");
 }
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
+// Force Sub Gate Check
+var fsub_enabled = Bot.getProperty("fsub_enabled");
+if (fsub_enabled === null || fsub_enabled === undefined) fsub_enabled = true;
+var fsub_channels = getPropJson("fsub_channels", []);
+
+if (fsub_enabled && fsub_channels.length > 0 && uid != OWNER_ID) {
+  var current_version = fsub_channels.map(function(c) { return c.chat_id; }).join(",");
+  var user_version = User.getProperty("fsub_verified_version");
+
+  if (user_version !== current_version) {
+    if (params) {
+      User.setProperty("pending_start_params", params.trim(), "string");
+    }
+
+    var fsub_rows = [];
+    var fsub_curr_row = [];
+    for (var fi = 0; fi < fsub_channels.length; fi++) {
+      fsub_curr_row.push({
+        text: "JOIN",
+        url: fsub_channels[fi].link,
+        style: "primary"
+      });
+      if (fsub_curr_row.length === 3) {
+        fsub_rows.push(fsub_curr_row);
+        fsub_curr_row = [];
+      }
+    }
+    if (fsub_curr_row.length > 0) {
+      fsub_rows.push(fsub_curr_row);
+    }
+    fsub_rows.push([
+      { text: "✅ VERIFY", callback_data: "fsub_verify", style: "success" }
+    ]);
+
+    var fsub_lock_text = 
+      "👋 <b>Welcome to Toxic Vote Giveaway Bot!</b>\n\n" +
+      "⚠️ <b>Access Restricted:</b> Bot ko use karne ke liye pehle neeche diye gaye sabhi channels join karein.\n\n" +
+      "👇 Sabhi channels join karne ke baad <b>✅ VERIFY</b> button dabayein:\n" +
+      "✨ <i>Request channels me agar aapka join request pending hai to bhi verify ho jayega!</i>";
+
+    var target_chat_fsub = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+    if (request && request.callback_query && request.callback_query.message) {
+      Api.editMessageText({
+        chat_id: request.callback_query.message.chat.id,
+        message_id: request.callback_query.message.message_id,
+        text: fsub_lock_text,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: fsub_rows }
+      });
+    } else {
+      Api.sendMessage({
+        chat_id: target_chat_fsub,
+        text: fsub_lock_text,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: fsub_rows }
+      });
+    }
+    return;
+  }
+}
+
+// Restore pending params if user just verified
+if (!params) {
+  var saved_params = User.getProperty("pending_start_params");
+  if (saved_params) {
+    params = saved_params;
+    User.setProperty("pending_start_params", null, "string");
+  }
+}
+
 if (params) {
   var param_str = params.trim();
+  if (param_str.indexOf("vote_") === 0) {
+    Bot.run({
+      command: "vote_referral",
+      options: { raw: param_str }
+    });
+    return;
+  }
   if (param_str.indexOf("join_") === 0) {
     param_str = param_str.replace("join_", "");
   }

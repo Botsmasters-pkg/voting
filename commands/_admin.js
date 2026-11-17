@@ -52,6 +52,7 @@ var buttons = [
     { text: "🏆 Live Contests & Giveaways", callback_data: "admin_giveaways", style: "success" }
   ],
   [
+    { text: "📢 Force Sub Channels", callback_data: "admin_fsub", style: "primary" },
     { text: "🎛 Channel Control Suite", callback_data: "channel_tools", style: "primary" }
   ],
   [

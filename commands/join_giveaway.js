@@ -91,6 +91,8 @@ if (!already_joined && giveaway.participants) {
 if (already_joined) {
   var cur_votes = (giveaway.vote_counts[uid] || giveaway.vote_counts[String(uid)]) || 0;
   var participant_name = giveaway.users[uid] || giveaway.users[String(uid)] || (user.first_name || "User");
+  var ref_link = "https://t.me/" + BOT_USERNAME + "?start=vote_" + gid + "_" + uid;
+  var share_url = "https://t.me/share/url?url=" + encodeURIComponent(ref_link) + "&text=" + encodeURIComponent("🔥 Mujhe is Contest me Vote karein! Link par click karke Vote button dabayein:");
   
   var already_text = 
     "🌟 <b>ALREADY PARTICIPATED!</b> 🌟\n\n" +
@@ -98,9 +100,12 @@ if (already_joined) {
     "👤 <b>Name:</b> " + participant_name + "\n" +
     "🆔 <b>Your ID:</b> <code>" + uid + "</code>\n" +
     "🗳 <b>Current Votes:</b> <code>" + cur_votes + " Votes</code>\n\n" +
-    "⚠️ <i>Aapka participant card channel me already post ho chuka hai. Ek user sirf ek hi baar participate kar sakta hai.</i>";
+    "🔗 <b>Aapka Personal Vote Link:</b>\n" +
+    "<code>" + ref_link + "</code>\n\n" +
+    "<i>Is link ko doston aur groups me share karein taaki wo direct aapko vote kar sakein!</i>";
 
   var already_buttons = [
+    [{ text: "📤 Share Vote Link With Friends", url: share_url, style: "success" }],
     [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
     [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
   ];
@@ -168,14 +173,21 @@ if (action === "join") {
   var j_cnt = User.getProperty("giveaways_joined", 0);
   User.setProperty("giveaways_joined", j_cnt + 1, "integer");
 
+  var my_reg_link = "https://t.me/" + BOT_USERNAME + "?start=vote_" + gid + "_" + uid;
+  var my_share_url = "https://t.me/share/url?url=" + encodeURIComponent(my_reg_link) + "&text=" + encodeURIComponent("🔥 Mujhe is Contest me Vote karein! Link par click karke Vote button dabayein:");
+
   var reg_text = 
     "🎉 <b>Registration Successful!</b>\n\n" +
     "Aap contest me successfully enter ho gaye hain!\n\n" +
     "👤 <b>Name:</b> " + full_name + "\n" +
     "🆔 <b>ID:</b> <code>" + uid + "</code>\n\n" +
-    "✅ <i>Channel me aapka voting message post ho gaya hai. Ab aap apne friends ko channel se vote karne ke liye bol sakte hain!</i>";
+    "✅ <i>Channel me aapka voting message post ho gaya hai!</i>\n\n" +
+    "🔗 <b>Aapka Personal Vote Link:</b>\n" +
+    "<code>" + my_reg_link + "</code>\n\n" +
+    "<i>Is link ko doston aur groups me share karein taaki wo direct aapko vote karein!</i>";
 
   var reg_buttons = [
+    [{ text: "📤 Share Vote Link With Friends", url: my_share_url, style: "success" }],
     [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
     [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
   ];

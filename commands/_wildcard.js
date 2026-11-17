@@ -24,12 +24,48 @@ if (!Bot.getProperty("bot_username")) {
   });
 }
 
+// Intercept Chat Join Requests (Instant verification support for request channels)
+if (request && request.chat_join_request) {
+  var cjr = request.chat_join_request;
+  var req_uid = cjr.from ? cjr.from.id : null;
+  var req_chat = cjr.chat ? cjr.chat.id : null;
+  if (req_uid && req_chat) {
+    Bot.setProperty("fsub_requested_" + req_chat + "_" + req_uid, true, "boolean");
+  }
+  return;
+}
+
 // 0. Handle Dynamic Callback Queries
 if (request && request.callback_query && request.callback_query.data) {
   Api.answerCallbackQuery({
     callback_query_id: request.callback_query.id
   });
   var data = request.callback_query.data;
+
+  if (data === "admin_fsub") {
+    Bot.runCommand("admin_fsub");
+    return;
+  }
+  if (data === "admin_fsub_toggle") {
+    Bot.runCommand("admin_fsub_toggle");
+    return;
+  }
+  if (data === "admin_fsub_remove") {
+    Bot.runCommand("admin_fsub_remove");
+    return;
+  }
+  if (data.indexOf("admin_fsub_remove ") === 0) {
+    Bot.run({ command: "admin_fsub_remove", params: data.replace("admin_fsub_remove ", "") });
+    return;
+  }
+  if (data.indexOf("admin_fsub_prompt ") === 0) {
+    Bot.run({ command: "admin_fsub_prompt", params: data.replace("admin_fsub_prompt ", "") });
+    return;
+  }
+  if (data === "fsub_verify") {
+    Bot.runCommand("fsub_verify");
+    return;
+  }
 
   if (data === "go_back_home" || data === "cancel_creation") {
     Bot.runCommand("/start");
