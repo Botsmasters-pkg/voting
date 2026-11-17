@@ -121,7 +121,9 @@ if (mid && target_channel) {
 var reply_text = 
   "💎 <b>Added +" + votes + " votes!</b>\n" +
   "<b>New Total:</b> " + new_votes + "\n\n" +
-  (channel_synced ? "✅ <i>Channel button updated in real-time!</i>" : "ℹ️ <i>Channel button update queued (channel message ID link hone par auto-sync ho jayega).</i>");
+  (channel_synced 
+    ? "✅ <b>Channel button updated in real-time!</b> (<code>Vote - " + new_votes + "</code>)" 
+    : "⚠️ <b>Channel button update pending:</b>\n<i>Channel me is participant card ke <b>[Vote]</b> button par 1 bar tap karein, ya us message ko bot me forward karein — button turant <b>Vote - " + new_votes + "</b> me badal jayega!</i>");
 var buttons = [
   [{ text: "BACK", callback_data: "manage_giveaway " + gid, style: "primary" }]
 ];

@@ -274,11 +274,106 @@ if (request && request.channel_post && request.channel_post.chat) {
     }
     Bot.setProperty("connected_channels", cp_channels, "json");
   }
+
+  // Auto-detect and cache participant cards from channel posts
+  var cp = request.channel_post;
+  var cp_mid = cp.message_id;
+  var cp_text = cp.text || cp.caption || "";
+  var cp_cb = "";
+  if (cp.reply_markup && cp.reply_markup.inline_keyboard && cp.reply_markup.inline_keyboard[0] && cp.reply_markup.inline_keyboard[0][0]) {
+    cp_cb = cp.reply_markup.inline_keyboard[0][0].callback_data || "";
+  }
+
+  var found_p_gid = null;
+  var found_p_uid = null;
+  if (cp_cb && cp_cb.indexOf("vote ") === 0) {
+    var cb_p = cp_cb.replace("vote ", "").trim().split(/\s+/);
+    if (cb_p.length >= 2) {
+      found_p_gid = cb_p[0];
+      found_p_uid = cb_p[1];
+    }
+  } else if (cp_text.indexOf("NEW PARTICIPANT JOINED") !== -1 || cp_text.indexOf("PARTICIPANT") !== -1) {
+    var id_m2 = cp_text.match(/ID:\s*<code>?(\d+)<?/i) || cp_text.match(/ID:\s*(\d+)/i);
+    if (id_m2) found_p_uid = id_m2[1];
+  }
+
+  if (found_p_uid) {
+    var all_gw = getPropJson("all_giveaways", {});
+    for (var g_k in all_gw) {
+      var g_obj = all_gw[g_k];
+      if (g_obj && (found_p_gid ? g_obj.id === found_p_gid : (g_obj.users && (g_obj.users[found_p_uid] || g_obj.users[String(found_p_uid)])))) {
+        g_obj.vote_messages = g_obj.vote_messages || {};
+        g_obj.vote_messages[found_p_uid] = cp_mid;
+        g_obj.vote_messages[String(found_p_uid)] = cp_mid;
+        g_obj.vote_messages[Number(found_p_uid)] = cp_mid;
+        if (cp_chat && cp_chat.id) g_obj.channel_chat_id = cp_chat.id;
+        all_gw[g_k] = g_obj;
+        Bot.setProperty("all_giveaways", all_gw, "json");
+        break;
+      }
+    }
+  }
 }
 
 // 3. User Text Message State Machine Dispatcher
 if (user && message) {
   var msg_text = message.trim();
+
+  // Check if message is a forwarded participant post from a channel
+  var fwd_chat = null;
+  var fwd_mid = null;
+  if (request && request.message) {
+    if (request.message.forward_from_chat) {
+      fwd_chat = request.message.forward_from_chat;
+      fwd_mid = request.message.forward_from_message_id;
+    } else if (request.message.forward_origin && request.message.forward_origin.type === "channel") {
+      fwd_chat = request.message.forward_origin.chat;
+      fwd_mid = request.message.forward_origin.message_id;
+    }
+  }
+
+  if (fwd_chat && fwd_mid && message) {
+    var id_fwd = message.match(/ID:\s*<code>?(\d+)<?/i) || message.match(/ID:\s*(\d+)/i);
+    if (id_fwd && (message.indexOf("PARTICIPANT") !== -1 || message.indexOf("Vote karne ke liye") !== -1)) {
+      var f_uid = id_fwd[1];
+      var all_gw_fwd = getPropJson("all_giveaways", {});
+      for (var f_gid in all_gw_fwd) {
+        var fgw = all_gw_fwd[f_gid];
+        if (fgw && !fgw.ended && fgw.status !== "ended" && fgw.users && (fgw.users[f_uid] || fgw.users[String(f_uid)])) {
+          fgw.vote_messages = fgw.vote_messages || {};
+          fgw.vote_messages[f_uid] = fwd_mid;
+          fgw.vote_messages[String(f_uid)] = fwd_mid;
+          fgw.vote_messages[Number(f_uid)] = fwd_mid;
+          fgw.channel_chat_id = fwd_chat.id;
+          all_gw_fwd[f_gid] = fgw;
+          Bot.setProperty("all_giveaways", all_gw_fwd, "json");
+
+          var f_votes = (fgw.vote_counts && fgw.vote_counts[f_uid]) ? fgw.vote_counts[f_uid] : 0;
+          Api.editMessageReplyMarkup({
+            chat_id: fwd_chat.id,
+            message_id: fwd_mid,
+            reply_markup: {
+              inline_keyboard: [[
+                { text: "Vote - " + f_votes, callback_data: "vote " + f_gid + " " + f_uid, style: "success" }
+              ]]
+            },
+            on_error: "on_channel_post_error"
+          });
+
+          Bot.sendMessage(
+            "🎉 <b>PARTICIPANT CARD LINKED & SYNCED!</b>\n\n" +
+            "👤 <b>Participant ID:</b> <code>" + f_uid + "</code>\n" +
+            "🆔 <b>Channel Message ID:</b> <code>" + fwd_mid + "</code>\n" +
+            "📢 <b>Channel:</b> <code>" + (fwd_chat.title || fwd_chat.id) + "</code>\n" +
+            "🗳 <b>Current Votes:</b> <code>" + f_votes + " Votes</code>\n\n" +
+            "✅ <i>Channel me button turant <b>[Vote - " + f_votes + "]</b> update ho gaya hai!</i>",
+            { parse_mode: "HTML" }
+          );
+          return;
+        }
+      }
+    }
+  }
 
   // Cancel commands
   if (msg_text === "/cancel" || msg_text.toLowerCase() === "cancel") {

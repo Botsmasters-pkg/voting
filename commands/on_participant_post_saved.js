@@ -36,16 +36,35 @@ if (!gid && user) {
   }
 }
 
-// Fallback: Extract gid and participant_uid directly from the Telegram message button callback_data
-if ((!gid || !participant_uid) && options && options.result && options.result.reply_markup && options.result.reply_markup.inline_keyboard) {
+// Fallback: Extract gid and participant_uid directly from the Telegram message button callback_data or text
+if ((!gid || !participant_uid) && options && options.result) {
   try {
-    var cb = options.result.reply_markup.inline_keyboard[0][0].callback_data;
-    if (cb && cb.indexOf("vote ") === 0) {
-      var parts = cb.replace("vote ", "").trim().split(/\s+/);
-      gid = parts[0];
-      participant_uid = parts[1];
+    if (options.result.reply_markup && options.result.reply_markup.inline_keyboard && options.result.reply_markup.inline_keyboard[0]) {
+      var cb = options.result.reply_markup.inline_keyboard[0][0].callback_data;
+      if (cb && cb.indexOf("vote ") === 0) {
+        var parts = cb.replace("vote ", "").trim().split(/\s+/);
+        gid = parts[0];
+        participant_uid = parts[1];
+      }
+    }
+    if (!participant_uid && options.result.text) {
+      var id_m = options.result.text.match(/ID:\s*<code>?(\d+)<?/i) || options.result.text.match(/ID:\s*(\d+)/i);
+      if (id_m) {
+        participant_uid = id_m[1];
+      }
     }
   } catch (e) {}
+}
+
+if (!gid && participant_uid) {
+  var temp_all = getPropJson("all_giveaways", {});
+  for (var g_k in temp_all) {
+    var gw = temp_all[g_k];
+    if (gw && !gw.ended && gw.status !== "ended" && gw.users && (gw.users[participant_uid] || gw.users[String(participant_uid)])) {
+      gid = g_k;
+      break;
+    }
+  }
 }
 
 if (options && options.result && options.result.message_id && gid && participant_uid) {
@@ -55,6 +74,7 @@ if (options && options.result && options.result.message_id && gid && participant
     giveaway.vote_messages = giveaway.vote_messages || {};
     giveaway.vote_messages[participant_uid] = options.result.message_id;
     giveaway.vote_messages[String(participant_uid)] = options.result.message_id;
+    giveaway.vote_messages[Number(participant_uid)] = options.result.message_id;
     if (options.result.chat && options.result.chat.id) {
       giveaway.channel_chat_id = options.result.chat.id;
     }
