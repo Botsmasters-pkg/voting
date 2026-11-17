@@ -49,7 +49,7 @@ var buttons = [
     { text: "📢 Broadcast", callback_data: "admin_broadcast", style: "success" }
   ],
   [
-    { text: "🏆 All Contests & Giveaways", callback_data: "admin_giveaways", style: "success" }
+    { text: "🏆 Live Contests & Giveaways", callback_data: "admin_giveaways", style: "success" }
   ],
   [
     { text: "🎛 Channel Control Suite", callback_data: "channel_tools", style: "primary" }

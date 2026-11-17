@@ -99,7 +99,7 @@ var buttons = [
 
 if (is_owner) {
   buttons.push([
-    { text: "🔙 All Contests", callback_data: "admin_giveaways", style: "primary" },
+    { text: "🔙 Live Contests", callback_data: "admin_giveaways", style: "primary" },
     { text: "⚙️ Admin Dashboard", callback_data: "/admin", style: "primary" }
   ]);
 } else {
