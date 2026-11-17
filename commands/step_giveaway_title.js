@@ -32,6 +32,14 @@ if (!channel_target) {
   return;
 }
 
+// Multi-step turn guard: If invoked in the same turn by step_giveaway_channel,
+// do not consume channel_input as title. Arm the prompt and wait for user's actual reply!
+if (User.getProperty("giveaway_title_ready") !== true) {
+  User.setProperty("giveaway_title_ready", true, "boolean");
+  return;
+}
+User.setProperty("giveaway_title_ready", false, "boolean");
+
 var all_giveaways = getPropJson("all_giveaways", {});
 var target_lower = String(channel_target).toLowerCase();
 var target_uname = target_lower.startsWith("@") ? target_lower.substring(1) : target_lower;

@@ -35,6 +35,14 @@ function getPropJson(name, default_val) {
 var chat_id = User.getProperty("fsub_temp_chat_id");
 var mode = User.getProperty("fsub_add_mode", "private");
 
+// Multi-step turn guard: If invoked in same turn by step_fsub_chat_id,
+// arm the prompt and wait for user's actual link input!
+if (User.getProperty("fsub_link_ready") !== true) {
+  User.setProperty("fsub_link_ready", true, "boolean");
+  return;
+}
+User.setProperty("fsub_link_ready", false, "boolean");
+
 if (!chat_id) {
   Bot.sendMessage("⚠️ Chat ID session expire ho gaya. Kripya shuru se try karein.");
   Bot.runCommand("admin_fsub");

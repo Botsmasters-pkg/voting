@@ -31,6 +31,7 @@ if (input.indexOf("t.me/") !== -1 || input.indexOf("http") !== -1) {
 
 var chat_id = input;
 User.setProperty("fsub_temp_chat_id", chat_id, "string");
+User.setProperty("fsub_link_ready", false, "boolean");
 
 var mode = User.getProperty("fsub_add_mode", "private");
 var link_type_name = mode === "request" ? "Join Request Link" : "Invite Link";

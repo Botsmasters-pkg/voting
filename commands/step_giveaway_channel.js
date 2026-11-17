@@ -80,8 +80,9 @@ if (existing_active) {
   return;
 }
 
-// Save channel temporarily for Step 2
+// Save channel temporarily for Step 2 and reset title ready flag
 User.setProperty("temp_giveaway_channel", channel_input, "string");
+User.setProperty("giveaway_title_ready", false, "boolean");
 
 // Auto-register channel into connected_channels for Admin Control Suite
 var channels = getPropJson("connected_channels", {});
