@@ -22,13 +22,21 @@ function getPropJson(name, default_val) {
 
 var channels = getPropJson("connected_channels", {});
 var all_giveaways = getPropJson("all_giveaways", {});
+var removed_channels = getPropJson("removed_channels", {});
 var needs_save = false;
 
-// Auto-sync any channels from created contests
+// Auto-sync any channels from created contests (EXCLUDING removed ones)
 for (var gid in all_giveaways) {
   var g = all_giveaways[gid];
   if (g && g.channel) {
     var ch_raw = String(g.channel);
+    var ch_uname = ch_raw.startsWith("@") ? ch_raw.toLowerCase() : "";
+    
+    // Skip if admin explicitly removed this channel
+    if (removed_channels[ch_raw] || (ch_uname && removed_channels[ch_uname])) {
+      continue;
+    }
+    
     if (!channels[ch_raw]) {
       var auto_obj = {
         id: ch_raw,
@@ -58,6 +66,11 @@ for (var k in channels) {
   if (!item || typeof item !== "object") continue;
   var uniq_id = String(item.id || k);
   var uname_lower = item.username ? String(item.username).toLowerCase() : "";
+  
+  // Skip if in removed list
+  if (removed_channels[uniq_id] || (uname_lower && (removed_channels[uname_lower] || removed_channels["@" + uname_lower]))) {
+    continue;
+  }
   
   if (!seen[uniq_id] && (!uname_lower || !seen[uname_lower])) {
     seen[uniq_id] = true;

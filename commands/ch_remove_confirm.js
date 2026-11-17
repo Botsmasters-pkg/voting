@@ -20,9 +20,19 @@ var buttons = [
 
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-Api.sendMessage({
-  chat_id: target_chat,
-  text: text,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: buttons }
-});
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: buttons }
+  });
+}
