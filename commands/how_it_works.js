@@ -5,7 +5,7 @@
 CMD*/
 
 var text = 
-  "ℹ️ <b>HOW NOBITA VOTING BOT WORKS:</b>\n\n" +
+  "ℹ️ <b>HOW TOXIC VOTING BOT WORKS:</b>\n\n" +
   "<b>1️⃣ Step 1: Bot ko Channel me Admin banayein</b>\n" +
   "• Bot ko apne Telegram Channel me add karein aur <i>Post Messages</i> & <i>Edit Messages</i> ki permission dein.\n\n" +
   "<b>2️⃣ Step 2: Contest Create karein</b>\n" +

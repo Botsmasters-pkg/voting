@@ -16,7 +16,7 @@ if (uid != OWNER_ID) {
 var detected_uname = Bot.getProperty("bot_username", (bot && bot.name ? bot.name : "Detecting..."));
 
 var text = 
-  "⚡ <b>NOBITA VOTING BOT - ADMIN DASHBOARD</b> ⚡\n\n" +
+  "⚡ <b>TOXIC VOTING BOT - ADMIN DASHBOARD</b> ⚡\n\n" +
   "Welcome back, <b>Admin (@codevexa)</b>!\n\n" +
   "🤖 <b>Current Active Bot:</b> @" + detected_uname + "\n" +
   "<i>Token badalne par bot ka naam automatically update ho jata hai.</i>\n\n" +

@@ -1,13 +1,13 @@
-# 🤖 Nobita Voting & Contest Bot for Bots.Business (BB)
+# 🤖 Toxic Voting & Contest Bot for Bots.Business (BB)
 
-Ye bot aapke Python bot (`NobitaVotBot.py`) ko **Bots.Business (BB)** platform ke **BJS (Bot JavaScript)** format me convert karke banaya gaya hai.
+Ye bot aapke Python bot (`ToxicVotBot.py`) ko **Bots.Business (BB)** platform ke **BJS (Bot JavaScript)** format me convert karke banaya gaya hai.
 
 ---
 
 ## 📁 File Structure
 
 ```text
-├── NobitaVotingBot.bb              <-- Single-file (.bb) bundle jisme sabhi commands aur BJS code bundled hai
+├── ToxicVotingBot.bb              <-- Single-file (.bb) bundle jisme sabhi commands aur BJS code bundled hai
 ├── bot.json                        <-- Bots.Business Git Sync configuration
 └── commands/                       <-- Sabhi BJS command files
     ├── _start.js                   <-- /start menu aur deep-linking
@@ -38,7 +38,7 @@ Ye bot aapke Python bot (`NobitaVotBot.py`) ko **Bots.Business (BB)** platform k
 Bots.Business par bot run karne ke **3 aasan tareeqe** hain:
 
 ### Method 1: Git Sync (Sabse Best & Recommended)
-1. Ek **GitHub** repository banayein (e.g., `nobita-voting-bb`).
+1. Ek **GitHub** repository banayein (e.g., `toxic-voting-bb`).
 2. Is folder ke sabhi files (`bot.json` aur `commands/` folder) ko us repository me push kar dein.
 3. **Bots.Business App / Web** (`app.bots.business`) me login karein.
 4. Apna bot select karein > **Tools** > **Git Sync** > **Configure Git** me jaakar apni GitHub repo ka URL dalein.
