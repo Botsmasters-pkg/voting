@@ -66,16 +66,19 @@ var new_votes = giveaway.vote_counts[target_uid];
 all_giveaways[gid] = giveaway;
 Bot.setProperty("all_giveaways", all_giveaways, "json");
 
-// Update channel button if message ID is known
-if (giveaway.vote_messages && giveaway.vote_messages[target_uid] && giveaway.channel) {
+// Update channel button in real-time
+var target_channel = giveaway.channel_chat_id || giveaway.channel;
+var mid = giveaway.vote_messages ? (giveaway.vote_messages[target_uid] || giveaway.vote_messages[String(target_uid)] || giveaway.vote_messages[Number(target_uid)]) : null;
+
+if (mid && target_channel) {
   var new_markup = {
     inline_keyboard: [[
       { text: "Vote - " + new_votes, callback_data: "vote " + gid + " " + target_uid, style: "success" }
     ]]
   };
   Api.editMessageReplyMarkup({
-    chat_id: giveaway.channel,
-    message_id: giveaway.vote_messages[target_uid],
+    chat_id: target_channel,
+    message_id: mid,
     reply_markup: new_markup
   });
 }

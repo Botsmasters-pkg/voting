@@ -1,6 +1,6 @@
 /*CMD
   command: on_vote_member_check
-  help: Callback after verifying channel membership for vote
+  help: Callback after verifying channel membership for vote with real-time channel button update
   need_reply: false
 CMD*/
 
@@ -41,13 +41,6 @@ if (!gid || !participant_id) {
   }
 }
 
-var is_member = (status === "creator" || status === "administrator" || status === "member" || (status === "restricted" && member.is_member));
-
-if (!is_member) {
-  answer("⚠️ Vote count karane ke liye channel join karna zaroori hai! Kripya pehle channel join karein.", true);
-  return;
-}
-
 var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
@@ -56,6 +49,37 @@ if (!giveaway) {
   return;
 }
 
+var is_member = (status === "creator" || status === "administrator" || status === "member" || (status === "restricted" && member.is_member));
+
+// If user is NOT a channel member, enforce membership requirement with frictionless 1-tap buttons
+if (!is_member) {
+  answer("⚠️ Vote count karane ke liye pehle channel join karein!", true);
+
+  var ch_raw = giveaway.channel || "";
+  var ch_link = ch_raw.startsWith("@") ? ("https://t.me/" + ch_raw.replace("@", "")) : ("https://t.me/" + Bot.getProperty("bot_username", "bot") + "?startchannel=true");
+
+  var join_prompt_text = 
+    "⚠️ <b>CHANNEL JOIN KARNA ZAROORI HAI!</b> ⚠️\n\n" +
+    "Aapka vote tabhi count hoga jab aap pehle contest channel join karenge.\n\n" +
+    "👉 <b>Step 1:</b> Neeche diye gaye <b>📢 Step 1: Join Channel</b> button par click karke channel join karein.\n" +
+    "👉 <b>Step 2:</b> Join karne ke baad turant <b>🗳 Step 2: Cast Vote Now</b> button dabayein!\n\n" +
+    "✨ <i>Ek baar vote record ho gaya, uske baad agar aap channel chhodte bhi hain to bhi aapka vote safe rahega!</i>";
+
+  var prompt_buttons = [
+    [{ text: "📢 Step 1: Join Channel", url: ch_link, style: "primary" }],
+    [{ text: "🗳 Step 2: Cast Vote Now", callback_data: "vote " + gid + " " + participant_id, style: "success" }]
+  ];
+
+  Api.sendMessage({
+    chat_id: voter_id,
+    text: join_prompt_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: prompt_buttons }
+  });
+  return;
+}
+
+// User IS a member - Record vote!
 giveaway.vote_counts = giveaway.vote_counts || {};
 giveaway.vote_records = giveaway.vote_records || {};
 giveaway.voted_users = giveaway.voted_users || {};
@@ -76,6 +100,17 @@ giveaway.vote_records[vote_key] = {
   voted_at: new Date().toISOString()
 };
 
+// If clicked directly in channel, capture message ID & channel chat ID
+if (request && request.callback_query && request.callback_query.message) {
+  var cb_chat = request.callback_query.message.chat;
+  if (cb_chat && (cb_chat.type === "channel" || cb_chat.type === "supergroup")) {
+    giveaway.vote_messages = giveaway.vote_messages || {};
+    giveaway.vote_messages[participant_id] = request.callback_query.message.message_id;
+    giveaway.vote_messages[String(participant_id)] = request.callback_query.message.message_id;
+    giveaway.channel_chat_id = cb_chat.id;
+  }
+}
+
 var total_votes_all = Bot.getProperty("total_votes_count", 0);
 Bot.setProperty("total_votes_count", total_votes_all + 1, "integer");
 
@@ -85,6 +120,7 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 var votes_given = User.getProperty("votes_given", 0);
 User.setProperty("votes_given", votes_given + 1, "integer");
 
+// 1. Update the message where user clicked (if in channel or private chat)
 if (request && request.callback_query && request.callback_query.message) {
   var chat_id = request.callback_query.message.chat.id;
   var message_id = request.callback_query.message.message_id;
@@ -99,6 +135,22 @@ if (request && request.callback_query && request.callback_query.message) {
     chat_id: chat_id,
     message_id: message_id,
     reply_markup: { inline_keyboard: updated_button }
+  });
+}
+
+// 2. Also update the channel card button in real-time (especially if voter voted from referral link in PM)
+var target_channel = giveaway.channel_chat_id || giveaway.channel;
+var ch_mid = giveaway.vote_messages ? (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)]) : null;
+
+if (ch_mid && target_channel) {
+  Api.editMessageReplyMarkup({
+    chat_id: target_channel,
+    message_id: ch_mid,
+    reply_markup: {
+      inline_keyboard: [[
+        { text: "Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
+      ]]
+    }
   });
 }
 

@@ -24,6 +24,10 @@ if (options && options.result && options.result.message_id && gid && participant
   if (giveaway) {
     giveaway.vote_messages = giveaway.vote_messages || {};
     giveaway.vote_messages[participant_uid] = options.result.message_id;
+    giveaway.vote_messages[String(participant_uid)] = options.result.message_id;
+    if (options.result.chat && options.result.chat.id) {
+      giveaway.channel_chat_id = options.result.chat.id;
+    }
     all_giveaways[gid] = giveaway;
     Bot.setProperty("all_giveaways", all_giveaways, "json");
   }
