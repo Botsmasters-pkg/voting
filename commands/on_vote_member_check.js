@@ -4,6 +4,27 @@
   need_reply: false
 CMD*/
 
+function answer(msg, alert) {
+  var cb_id = (request && request.callback_query) ? request.callback_query.id : (request ? request.id : null);
+  if (cb_id) {
+    Api.answerCallbackQuery({
+      callback_query_id: cb_id,
+      text: msg || "",
+      show_alert: !!alert
+    });
+  }
+}
+
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 var member = options && options.result ? options.result : null;
 var status = member ? member.status : "";
 
@@ -15,18 +36,15 @@ var voter_id = user.telegramid;
 var is_member = (status === "creator" || status === "administrator" || status === "member" || (status === "restricted" && member.is_member));
 
 if (!is_member) {
-  Bot.answerCallbackQuery({
-    message: "⚠️ Vote count karane ke liye channel join karna zaroori hai! Kripya pehle channel join karein.",
-    alert: true
-  });
+  answer("⚠️ Vote count karane ke liye channel join karna zaroori hai! Kripya pehle channel join karein.", true);
   return;
 }
 
-var all_giveaways = Bot.getProperty("all_giveaways", {});
+var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
 if (!giveaway) {
-  Bot.answerCallbackQuery({ message: "❌ Contest data nahi mila.", alert: true });
+  answer("❌ Contest data nahi mila.", true);
   return;
 }
 
@@ -35,7 +53,7 @@ giveaway.voted_users = giveaway.voted_users || {};
 giveaway.voted_users[participant_id] = giveaway.voted_users[participant_id] || [];
 
 if (giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
-  Bot.answerCallbackQuery({ message: "⚠️ Aap pehle hi vote de chuke hain!", alert: true });
+  answer("⚠️ Aap pehle hi vote de chuke hain!", true);
   return;
 }
 
@@ -58,7 +76,7 @@ if (request && request.callback_query && request.callback_query.message) {
 
   var updated_button = [
     [
-      { title: "🗳 Vote - ", text: "🗳 Vote - ", command: "vote ", callback_data: "vote ", style: "success" }
+      { text: "🗳 Vote (" + current_votes + ")", callback_data: "vote " + gid + " " + participant_id, style: "success" }
     ]
   ];
 
@@ -69,7 +87,4 @@ if (request && request.callback_query && request.callback_query.message) {
   });
 }
 
-Bot.answerCallbackQuery({
-  message: "✅ Vote successfully registered! Total Votes: " + current_votes,
-  alert: false
-});
+answer("✅ Vote successfully registered! Total Votes: " + current_votes, false);

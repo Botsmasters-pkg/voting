@@ -4,6 +4,16 @@
   need_reply: false
 CMD*/
 
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
 var gid = options && options.giveaway_id ? options.giveaway_id : (params || "").trim();
 
 if (!gid) {
@@ -11,7 +21,7 @@ if (!gid) {
   return;
 }
 
-var all_giveaways = Bot.getProperty("all_giveaways", {});
+var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
 if (!giveaway) {
@@ -27,6 +37,7 @@ if (giveaway.status !== "active") {
 var uid = user.telegramid;
 giveaway.participants = giveaway.participants || [];
 giveaway.vote_counts = giveaway.vote_counts || {};
+giveaway.voted_users = giveaway.voted_users || {};
 
 var already_joined = false;
 for (var i = 0; i < giveaway.participants.length; i++) {
@@ -36,6 +47,8 @@ for (var i = 0; i < giveaway.participants.length; i++) {
   }
 }
 
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
 if (already_joined) {
   var reply_text = 
     "⚠️ <b>Aap pehle hi is Contest me participate kar chuke hain!</b>\n\n" +
@@ -43,10 +56,17 @@ if (already_joined) {
     "🗳 <b>Current Votes:</b> " + (giveaway.vote_counts[uid] || 0) + "\n\n" +
     "Apne friends aur groups me channel post share karke votes badhayein!";
   
-  Bot.sendInlineKeyboard([
-    [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats", style: "primary" }],
-    [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
-  ], reply_text, { parse_mode: "HTML" });
+  var my_buttons = [
+    [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
+    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  ];
+
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: reply_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: my_buttons }
+  });
   return;
 }
 
@@ -78,7 +98,7 @@ var card_text =
 
 var vote_button = [
   [
-    { title: "🗳 Vote - 0", text: "🗳 Vote - 0", command: "vote ", callback_data: "vote ", style: "success" }
+    { text: "🗳 Vote (0)", callback_data: "vote " + gid + " " + uid, style: "success" }
   ]
 ];
 
@@ -95,7 +115,14 @@ var confirm_text =
   "📢 <b>Channel:</b> <code>" + giveaway.channel + "</code>\n\n" +
   "Aapka participant card channel me post ho gaya hai. Ab aap apne friends ko channel se vote karne ke liye bol sakte hain!";
 
-Bot.sendInlineKeyboard([
-  [{ title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats", style: "primary" }],
-  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
-], confirm_text, { parse_mode: "HTML" });
+var confirm_buttons = [
+  [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
+  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+];
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: confirm_text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: confirm_buttons }
+});
