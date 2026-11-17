@@ -8,12 +8,31 @@ CMD*/
 // ===== CONFIG =====
 var OWNER_ID = 8710308658;
 
-// Accurate Bot Username: Fallback to TOXICVOTESBOT and read cached Telegram username
-var BOT_USERNAME = Bot.getProperty("bot_username", "TOXICVOTESBOT");
+// Dynamic Bot Username Detection from Token
+var BOT_USERNAME = Bot.getProperty("bot_username");
+if (!BOT_USERNAME) {
+  var bInfo = Bot.getProperty("bot_info");
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) {
+      BOT_USERNAME = bInfo.result.username.replace("@", "");
+      Bot.setProperty("bot_username", BOT_USERNAME, "string");
+    } else if (bInfo.username) {
+      BOT_USERNAME = bInfo.username.replace("@", "");
+      Bot.setProperty("bot_username", BOT_USERNAME, "string");
+    }
+  }
+}
 
-// Always refresh bot username via getMe
-Api.getMe({ on_result: "on_save_bot_info" });
+// If username not yet detected from token, query Telegram getMe and re-render
+if (!BOT_USERNAME) {
+  Api.getMe({
+    result_to_bot_property: "bot_info",
+    on_result: "on_first_get_me"
+  });
+  return;
+}
 
+// Register user
 var all_users = Bot.getProperty("all_users", []);
 var uid = user.telegramid;
 if (all_users.indexOf(uid) === -1) {

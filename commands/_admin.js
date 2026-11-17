@@ -13,10 +13,22 @@ if (uid != OWNER_ID) {
   return;
 }
 
-// Ensure username is latest
-Api.getMe({ on_result: "on_save_bot_info" });
+var detected_uname = Bot.getProperty("bot_username");
+if (!detected_uname) {
+  var bInfo = Bot.getProperty("bot_info");
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) detected_uname = bInfo.result.username.replace("@", "");
+    else if (bInfo.username) detected_uname = bInfo.username.replace("@", "");
+  }
+}
 
-var detected_uname = Bot.getProperty("bot_username", "TOXICVOTESBOT");
+if (!detected_uname) {
+  detected_uname = "Detecting from token...";
+  Api.getMe({
+    result_to_bot_property: "bot_info",
+    on_result: "on_save_bot_info"
+  });
+}
 
 var text = 
   "⚡ <b>TOXIC VOTING BOT - ADMIN DASHBOARD</b> ⚡\n\n" +

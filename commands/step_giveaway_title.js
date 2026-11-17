@@ -26,8 +26,18 @@ var title_input = message.trim();
 var gid = "G" + (new Date().getTime());
 var OWNER_ID = 8710308658;
 
-// Accurate Bot Username: Fallback to TOXICVOTESBOT and read cached Telegram username
-var BOT_USERNAME = Bot.getProperty("bot_username", "TOXICVOTESBOT");
+// Dynamic Bot Username detected from token
+var BOT_USERNAME = Bot.getProperty("bot_username");
+if (!BOT_USERNAME) {
+  var bInfo = Bot.getProperty("bot_info");
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) BOT_USERNAME = bInfo.result.username.replace("@", "");
+    else if (bInfo.username) BOT_USERNAME = bInfo.username.replace("@", "");
+  }
+}
+if (!BOT_USERNAME) {
+  BOT_USERNAME = "bot";
+}
 
 // Create Giveaway Object
 var giveaway = {

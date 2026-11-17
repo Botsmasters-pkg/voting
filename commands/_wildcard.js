@@ -6,8 +6,12 @@ CMD*/
 
 var OWNER_ID = 8710308658;
 
+// Automatically detect & cache bot username from token if not yet cached
 if (!Bot.getProperty("bot_username")) {
-  Api.getMe({ on_result: "on_save_bot_info" });
+  Api.getMe({
+    result_to_bot_property: "bot_info",
+    on_result: "on_save_bot_info"
+  });
 }
 
 if (request && request.my_chat_member) {
@@ -86,4 +90,3 @@ if (user && message) {
     return;
   }
 }
-

@@ -5,7 +5,7 @@
 CMD*/
 
 Api.getMe({
-  on_result: "on_save_bot_info"
+  result_to_bot_property: "bot_info",
+  on_result: "on_admin_detect_bot"
 });
-Bot.sendMessage("🔄 Token ke anusaar Bot Username re-detect ho raha hai...");
-Bot.runCommand("/admin");
+Bot.sendMessage("🔄 Telegram API se Bot Token ka username detect ho raha hai...");

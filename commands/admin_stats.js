@@ -14,7 +14,18 @@ var all_users = Bot.getProperty("all_users", []);
 var all_giveaways = Bot.getProperty("all_giveaways", {});
 var total_votes_all = Bot.getProperty("total_votes_count", 0);
 var banned_users = Bot.getProperty("banned_users", []);
-var detected_uname = Bot.getProperty("bot_username", "TOXICVOTESBOT");
+
+var detected_uname = Bot.getProperty("bot_username");
+if (!detected_uname) {
+  var bInfo = Bot.getProperty("bot_info");
+  if (bInfo) {
+    if (bInfo.result && bInfo.result.username) detected_uname = bInfo.result.username.replace("@", "");
+    else if (bInfo.username) detected_uname = bInfo.username.replace("@", "");
+  }
+}
+if (!detected_uname) {
+  detected_uname = "Detecting...";
+}
 
 var contests_count = 0;
 var active_contests = 0;
