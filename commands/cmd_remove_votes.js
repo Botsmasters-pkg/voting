@@ -20,6 +20,7 @@ if (!gid) {
 
 User.setProperty("vote_giveaway", gid, "string");
 User.setProperty("vote_action", "remove", "string");
+User.setProperty("waiting_remove_votes", true, "boolean");
 
 var text = "<b>💎 REMOVE VOTES</b>\n\nSend: <code>USER_ID VOTES</code>";
 

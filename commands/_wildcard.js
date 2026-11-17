@@ -286,6 +286,10 @@ if (user && message) {
     User.setProperty("waiting_giveaway_title", false, "boolean");
     User.setProperty("waiting_fsub_chat_id", false, "boolean");
     User.setProperty("waiting_fsub_link", false, "boolean");
+    User.setProperty("waiting_add_votes", false, "boolean");
+    User.setProperty("waiting_remove_votes", false, "boolean");
+    User.setProperty("waiting_admin_ban", false, "boolean");
+    User.setProperty("waiting_admin_broadcast", false, "boolean");
     Bot.setProperty("waiting_clone_email_" + user.telegramid, false, "boolean");
     Bot.sendMessage("❌ <i>Operation cancelled.</i>", { parse_mode: "HTML" });
     Bot.runCommand("/start");
@@ -320,6 +324,30 @@ if (user && message) {
   // Force sub Step 2 (Link)
   if (User.getProperty("waiting_fsub_link")) {
     Bot.run({ command: "step_fsub_link", options: { text: message } });
+    return;
+  }
+
+  // Add Votes
+  if (User.getProperty("waiting_add_votes")) {
+    Bot.run({ command: "step_add_votes", options: { text: message } });
+    return;
+  }
+
+  // Remove Votes
+  if (User.getProperty("waiting_remove_votes")) {
+    Bot.run({ command: "step_remove_votes", options: { text: message } });
+    return;
+  }
+
+  // Admin Ban / Unban
+  if (User.getProperty("waiting_admin_ban")) {
+    Bot.run({ command: "step_admin_ban", options: { text: message } });
+    return;
+  }
+
+  // Admin Broadcast
+  if (User.getProperty("waiting_admin_broadcast")) {
+    Bot.run({ command: "step_admin_broadcast", options: { text: message } });
     return;
   }
 }

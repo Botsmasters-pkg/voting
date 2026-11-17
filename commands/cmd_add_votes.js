@@ -20,6 +20,7 @@ if (!gid) {
 
 User.setProperty("vote_giveaway", gid, "string");
 User.setProperty("vote_action", "add", "string");
+User.setProperty("waiting_add_votes", true, "boolean");
 
 var text = "<b>💎 ADD VOTES</b>\n\nSend: <code>USER_ID VOTES</code>";
 

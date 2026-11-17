@@ -39,4 +39,5 @@ if (request && request.callback_query && request.callback_query.message) {
   });
 }
 
+User.setProperty("waiting_admin_broadcast", true, "boolean");
 Bot.runCommand("step_admin_broadcast");

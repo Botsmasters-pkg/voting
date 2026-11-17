@@ -42,4 +42,5 @@ if (request && request.callback_query && request.callback_query.message) {
   });
 }
 
+User.setProperty("waiting_admin_ban", true, "boolean");
 Bot.runCommand("step_admin_ban");

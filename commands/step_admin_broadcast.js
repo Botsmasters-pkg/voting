@@ -10,14 +10,19 @@ if (user.telegramid != OWNER_ID) {
   return;
 }
 
-if (!message || message.toLowerCase() === "cancel" || message === "/start") {
+var raw_msg = (options && options.text) ? options.text : message;
+
+if (!raw_msg || raw_msg.toLowerCase() === "cancel" || raw_msg === "/start") {
+  User.setProperty("waiting_admin_broadcast", false, "boolean");
   Bot.sendMessage("❌ Broadcast cancel kar diya gaya.");
   Bot.runCommand("/admin");
   return;
 }
 
+User.setProperty("waiting_admin_broadcast", false, "boolean");
+
 var all_users = Bot.getProperty("all_users", []);
-var broadcast_text = "📢 <b>BROADCAST ANNOUNCEMENT:</b>\n\n" + message;
+var broadcast_text = "📢 <b>BROADCAST ANNOUNCEMENT:</b>\n\n" + raw_msg;
 
 Bot.sendMessage("⏳ Broadcast shuru ho raha hai... Total users: " + all_users.length);
 

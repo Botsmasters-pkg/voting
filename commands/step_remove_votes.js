@@ -10,16 +10,21 @@ if (!gid) {
   return;
 }
 
-if (!message) {
+var raw_msg = (options && options.text) ? options.text : message;
+
+if (!raw_msg) {
   Bot.sendMessage("🚨 Invalid! Send <code>USER_ID VOTES</code>.", { parse_mode: "HTML" });
   Bot.runCommand("step_remove_votes");
   return;
 }
 
-if (message === "/start" || message.toLowerCase() === "cancel") {
+if (raw_msg === "/start" || raw_msg.toLowerCase() === "cancel") {
+  User.setProperty("waiting_remove_votes", false, "boolean");
   Bot.runCommand("manage_giveaway " + gid);
   return;
 }
+
+User.setProperty("waiting_remove_votes", false, "boolean");
 
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
@@ -31,7 +36,7 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var parts = message.trim().split(/\s+/);
+var parts = raw_msg.trim().split(/\s+/);
 if (parts.length < 2) {
   Bot.sendMessage("🚨 Invalid! Send <code>USER_ID VOTES</code>.", { parse_mode: "HTML" });
   Bot.runCommand("step_remove_votes");

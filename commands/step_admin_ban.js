@@ -10,13 +10,18 @@ if (user.telegramid != OWNER_ID) {
   return;
 }
 
-if (!message || message.toLowerCase() === "cancel" || message === "/start") {
+var raw_msg = (options && options.text) ? options.text : message;
+
+if (!raw_msg || raw_msg.toLowerCase() === "cancel" || raw_msg === "/start") {
+  User.setProperty("waiting_admin_ban", false, "boolean");
   Bot.sendMessage("❌ Cancelled.");
   Bot.runCommand("/admin");
   return;
 }
 
-var target_id = parseInt(message.trim());
+User.setProperty("waiting_admin_ban", false, "boolean");
+
+var target_id = parseInt(raw_msg.trim());
 if (isNaN(target_id)) {
   Bot.sendMessage("⚠️ Kripya valid numeric User ID dalein.");
   Bot.runCommand("step_admin_ban");
