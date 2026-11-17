@@ -44,9 +44,11 @@ if (param_str.indexOf("do ") === 0) {
   Bot.setProperty("fsub_channels", updated, "json");
 
   var success_text = "✅ <b>Channel Removed from Force Sub!</b>\n\n" +
-    (removed ? ("📢 <b>" + removed.title + "</b> (<code>" + removed.chat_id + "</code>)") : "");
+    (removed ? ("📢 <b>" + removed.title + "</b> (<code>" + removed.chat_id + "</code>)") : "") +
+    "\n\n<i>Ab yeh channel user verification list me nahi aayega.</i>";
 
   var buttons = [
+    [{ text: "📋 View Channel List", callback_data: "admin_fsub_list", style: "primary" }],
     [{ text: "🔙 Back to F-Sub Menu", callback_data: "admin_fsub", style: "primary" }]
   ];
 

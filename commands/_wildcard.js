@@ -46,6 +46,10 @@ if (request && request.callback_query && request.callback_query.data) {
     Bot.runCommand("admin_fsub");
     return;
   }
+  if (data === "admin_fsub_list") {
+    Bot.runCommand("admin_fsub_list");
+    return;
+  }
   if (data === "admin_fsub_toggle") {
     Bot.runCommand("admin_fsub_toggle");
     return;

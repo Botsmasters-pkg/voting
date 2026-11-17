@@ -62,6 +62,7 @@ var toggle_label = fsub_enabled ? "🔴 Turn F-Sub OFF" : "🟢 Turn F-Sub ON";
 
 var buttons = [
   [
+    { text: "📋 Channel List (" + fsub_channels.length + ")", callback_data: "admin_fsub_list", style: "primary" },
     { text: toggle_label, callback_data: "admin_fsub_toggle", style: fsub_enabled ? "danger" : "success" }
   ],
   [
@@ -75,7 +76,7 @@ var buttons = [
 
 if (fsub_channels.length > 0) {
   buttons.push([
-    { text: "➖ Remove Channel", callback_data: "admin_fsub_remove", style: "danger" }
+    { text: "🗑 Remove Channel", callback_data: "admin_fsub_remove", style: "danger" }
   ]);
 }
 
