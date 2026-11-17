@@ -40,40 +40,38 @@ if (params) {
   }
 }
 
+// Exactly like original Python bot welcome text
 var welcome_text = 
-  "✨ <b>Welcome to Voting Contest Bot!</b> ✨\n\n" +
-  "Hello <b>" + (user.first_name || "User") + "</b>!\n\n" +
-  "Ye bot Telegram channels aur groups me <b>Voting Contests & Giveaways</b> organize karne ke liye banaya gaya hai.\n\n" +
-  "🚀 <b>Features:</b>\n" +
-  "• Live Vote Button with Counter\n" +
-  "• Anti-Cheat & 1-Vote-Per-User Security\n" +
-  "• Channel Force-Join Check\n" +
-  "• Detailed User & Admin Stats\n\n" +
-  "Neeche diye gaye buttons se shuru karein 👇";
+  "✨ <b>WELCOME TO TOXIC VOTE GIVEAWAY BOT</b> ✨\n\n" +
+  "<i>☄️ Create Powerful Vote Giveaways</i>\n" +
+  "<i>🔜 Real Time Vote System</i>\n" +
+  "<i>📈 Advanced Management Tools</i>\n" +
+  "<i>❤️‍🔥 Leaderboard & Analytics</i>\n\n" +
+  "<b>🚀 START CREATING NOW!</b>";
 
 var connect_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?startchannel=true&admin=post_messages") : "https://t.me";
 
+// Exactly like original Python bot user menu
 var buttons = [
   [
-    { title: "➕ Create Contest", text: "➕ Create Contest", command: "create_giveaway", callback_data: "create_giveaway" },
-    { title: "🎛 Channel Tools", text: "🎛 Channel Tools", command: "channel_tools", callback_data: "channel_tools" },
-    { title: "📊 My Contests", text: "📊 My Contests", command: "my_giveaways", callback_data: "my_giveaways" }
+    { title: "CONNECT", text: "CONNECT", url: connect_url }
   ],
   [
-    { title: "📈 My Stats", text: "📈 My Stats", command: "my_stats", callback_data: "my_stats" },
-    { title: "ℹ️ How It Works", text: "ℹ️ How It Works", command: "how_it_works", callback_data: "how_it_works" }
+    { title: "CREATE", text: "CREATE", command: "create_giveaway", callback_data: "create_giveaway" },
+    { title: "MANAGE", text: "MANAGE", command: "my_giveaways", callback_data: "my_giveaways" }
+  ],
+  [
+    { title: "MY STATS", text: "MY STATS", command: "my_stats", callback_data: "my_stats" },
+    { title: "HOW IT WORKS", text: "HOW IT WORKS", command: "how_it_works", callback_data: "how_it_works" }
   ],
   [
     { title: "👨‍💻 Developer", text: "👨‍💻 Developer", url: "https://t.me/codevexa" }
-  ],
-  [
-    { title: "🔗 Connect Channel (Admin)", text: "🔗 Connect Channel (Admin)", url: connect_url }
   ]
 ];
 
 if (uid == OWNER_ID) {
   buttons.push([
-    { title: "⚙️ Admin Panel", text: "⚙️ Admin Panel", command: "/admin", callback_data: "/admin" }
+    { title: "⚙️ ADMIN PANEL", text: "⚙️ ADMIN PANEL", command: "/admin", callback_data: "/admin" }
   ]);
 }
 

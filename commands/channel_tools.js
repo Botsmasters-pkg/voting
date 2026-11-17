@@ -4,12 +4,17 @@
   need_reply: false
 CMD*/
 
-var my_channels = User.getProperty("my_channels", []);
+var OWNER_ID = 8710308658;
+if (user.telegramid != OWNER_ID) {
+  Bot.sendMessage("🚫 <b>Access Denied:</b> Channel Control sirf Admin ke liye available hai.", { parse_mode: "HTML" });
+  return;
+}
+
 var active_channel = User.getProperty("active_channel");
 
 var text = 
-  "🎛 <b>CHANNEL ADMIN TOOLS</b> 🎛\n\n" +
-  "Aap is feature se apne channel ko bot ke zariye manage kar sakte hain:\n\n" +
+  "🎛 <b>CHANNEL ADMIN CONTROL SUITE</b> 🎛\n\n" +
+  "Is feature se aap bot ke channels ko manage kar sakte hain:\n\n" +
   "🔗 <b>Get Link:</b> Channel ka invite link generate karein\n" +
   "⬆️ <b>Promote:</b> Kisi user ko channel me Admin banayein\n" +
   "⬇️ <b>Demote:</b> Admin privileges remove karein\n" +
@@ -29,7 +34,7 @@ buttons.push([
 ]);
 
 buttons.push([
-  { title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }
+  { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin" }
 ]);
 
 Bot.sendInlineKeyboard(buttons, text, { parse_mode: "HTML" });

@@ -4,6 +4,12 @@
   need_reply: false
 CMD*/
 
+var OWNER_ID = 8710308658;
+if (user.telegramid != OWNER_ID) {
+  Bot.sendMessage("🚫 <b>Access Denied:</b> Sirf Admin access kar sakta hai.", { parse_mode: "HTML" });
+  return;
+}
+
 var active_channel = User.getProperty("active_channel");
 
 if (!active_channel) {
@@ -29,7 +35,7 @@ var buttons = [
   ],
   [
     { title: "🔄 Switch Channel", text: "🔄 Switch Channel", command: "ch_select_prompt", callback_data: "ch_select_prompt" },
-    { title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start" }
+    { title: "🔙 Back to Admin", text: "🔙 Back to Admin", command: "/admin", callback_data: "/admin" }
   ]
 ];
 

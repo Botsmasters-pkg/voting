@@ -28,6 +28,9 @@ var buttons = [
     { title: "📢 Broadcast", text: "📢 Broadcast", command: "admin_broadcast", callback_data: "admin_broadcast" }
   ],
   [
+    { title: "🎛 Channel Control Suite", text: "🎛 Channel Control Suite", command: "channel_tools", callback_data: "channel_tools" }
+  ],
+  [
     { title: "🔄 Refresh Bot Info", text: "🔄 Refresh Bot Info", command: "cmd_detect_bot", callback_data: "cmd_detect_bot" },
     { title: "🚫 Ban / Unban User", text: "🚫 Ban / Unban User", command: "admin_ban", callback_data: "admin_ban" }
   ],
