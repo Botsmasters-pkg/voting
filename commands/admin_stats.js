@@ -14,7 +14,7 @@ var all_users = Bot.getProperty("all_users", []);
 var all_giveaways = Bot.getProperty("all_giveaways", {});
 var total_votes_all = Bot.getProperty("total_votes_count", 0);
 var banned_users = Bot.getProperty("banned_users", []);
-var detected_uname = Bot.getProperty("bot_username", (bot && bot.name ? bot.name : "Auto"));
+var detected_uname = Bot.getProperty("bot_username", "TOXICVOTESBOT");
 
 var contests_count = 0;
 var active_contests = 0;

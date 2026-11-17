@@ -26,9 +26,8 @@ var title_input = message.trim();
 var gid = "G" + (new Date().getTime());
 var OWNER_ID = 8710308658;
 
-// Dynamic Bot Username detection
-var cached_uname = Bot.getProperty("bot_username");
-var BOT_USERNAME = (bot && bot.name) ? bot.name.replace("@", "") : (cached_uname || "");
+// Accurate Bot Username: Fallback to TOXICVOTESBOT and read cached Telegram username
+var BOT_USERNAME = Bot.getProperty("bot_username", "TOXICVOTESBOT");
 
 // Create Giveaway Object
 var giveaway = {
@@ -81,11 +80,11 @@ var channel_announcement =
   "👤 <b>Organized by:</b> " + (user.first_name || "Admin") + "\n\n" +
   "✨ <i>Contest me participate karne ke liye neeche diye gaye button par click karein!</i>";
 
-var join_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?start=join_" + gid) : ("https://t.me");
+var join_url = "https://t.me/" + BOT_USERNAME + "?start=join_" + gid;
 
 var channel_keyboard = [
   [
-    { title: "🎯 Join Contest", text: "🎯 Join Contest", url: join_url, style: "success" }
+    { text: "🎯 Join Contest", url: join_url, style: "success" }
   ]
 ];
 
@@ -107,8 +106,15 @@ var success_text =
   "<code>" + join_url + "</code>";
 
 var buttons = [
-  [{ title: "📊 My Contests", text: "📊 My Contests", command: "my_giveaways", callback_data: "my_giveaways", style: "primary" }],
-  [{ title: "🔙 Main Menu", text: "🔙 Main Menu", command: "/start", callback_data: "/start", style: "primary" }]
+  [{ text: "📊 My Contests", callback_data: "my_giveaways", style: "primary" }],
+  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
 ];
 
-Bot.sendInlineKeyboard(buttons, success_text, { parse_mode: "HTML" });
+var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
+
+Api.sendMessage({
+  chat_id: target_chat,
+  text: success_text,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: buttons }
+});

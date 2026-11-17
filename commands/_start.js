@@ -8,12 +8,11 @@ CMD*/
 // ===== CONFIG =====
 var OWNER_ID = 8710308658;
 
-var cached_uname = Bot.getProperty("bot_username");
-var BOT_USERNAME = (bot && bot.name) ? bot.name.replace("@", "") : (cached_uname || "");
+// Accurate Bot Username: Fallback to TOXICVOTESBOT and read cached Telegram username
+var BOT_USERNAME = Bot.getProperty("bot_username", "TOXICVOTESBOT");
 
-if (!cached_uname) {
-  Api.getMe({ on_result: "on_save_bot_info" });
-}
+// Always refresh bot username via getMe
+Api.getMe({ on_result: "on_save_bot_info" });
 
 var all_users = Bot.getProperty("all_users", []);
 var uid = user.telegramid;
@@ -46,7 +45,7 @@ var welcome_text =
   "<i>❤️‍🔥 Leaderboard & Analytics</i>\n\n" +
   "<b>🚀 START CREATING NOW!</b>";
 
-var connect_url = BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?startchannel=true&admin=post_messages") : "https://t.me";
+var connect_url = "https://t.me/" + BOT_USERNAME + "?startchannel=true&admin=post_messages";
 
 var buttons = [
   [
