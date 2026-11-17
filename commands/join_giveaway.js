@@ -1,6 +1,6 @@
 /*CMD
   command: join_giveaway
-  help: Handle giveaway link and participant entry exactly matching Python bot with safe space routing
+  help: Handle giveaway link and participant entry with strict single-entry guard
   need_reply: false
 CMD*/
 
@@ -69,61 +69,89 @@ if (giveaway.ended || giveaway.status === "ended") {
 }
 
 giveaway.users = giveaway.users || {};
+giveaway.participants = giveaway.participants || [];
 giveaway.vote_counts = giveaway.vote_counts || {};
 giveaway.vote_messages = giveaway.vote_messages || {};
 
-var already_joined = !!(giveaway.users[uid]);
+// STRICT CHECK: User already joined
+var already_joined = false;
+if (giveaway.users[uid] || giveaway.users[String(uid)]) {
+  already_joined = true;
+}
 if (!already_joined && giveaway.participants) {
   for (var i = 0; i < giveaway.participants.length; i++) {
-    if (giveaway.participants[i].id == uid) {
+    if (giveaway.participants[i].id == uid || String(giveaway.participants[i].id) === String(uid)) {
       already_joined = true;
       break;
     }
   }
 }
 
-var already_posted = !!(giveaway.vote_messages[uid]);
-
-// If user is already joined
-if (already_joined && action !== "join") {
-  var status_note = already_posted ? "✅ Already posted in channel!" : "⚠️ Not posted yet — POST button dabao";
+// IF ALREADY JOINED: Block completely, DO NOT post to channel
+if (already_joined) {
+  var cur_votes = (giveaway.vote_counts[uid] || giveaway.vote_counts[String(uid)]) || 0;
+  var participant_name = giveaway.users[uid] || giveaway.users[String(uid)] || (user.first_name || "User");
+  
   var already_text = 
-    "<b>🌟 ALREADY PARTICIPATED!</b>\n\n" +
-    "<b>Your ID:</b> <code>" + uid + "</code>\n" +
-    "<b>Status:</b> " + status_note;
+    "🌟 <b>ALREADY PARTICIPATED!</b> 🌟\n\n" +
+    "Aap is contest me <b>pehle hi participate kar chuke hain!</b>\n\n" +
+    "👤 <b>Name:</b> " + participant_name + "\n" +
+    "🆔 <b>Your ID:</b> <code>" + uid + "</code>\n" +
+    "🗳 <b>Current Votes:</b> <code>" + cur_votes + " Votes</code>\n\n" +
+    "⚠️ <i>Aapka participant card channel me already post ho chuka hai. Ek user sirf ek hi baar participate kar sakta hai.</i>";
 
   var already_buttons = [
-    [{ text: "POST MY VOTE MSG", callback_data: "join_giveaway join " + gid, style: "success" }]
+    [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
+    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
   ];
 
-  Api.sendMessage({
-    chat_id: target_chat,
-    text: already_text,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: already_buttons }
-  });
+  if (request && request.callback_query && request.callback_query.message) {
+    Api.editMessageText({
+      chat_id: request.callback_query.message.chat.id,
+      message_id: request.callback_query.message.message_id,
+      text: already_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: already_buttons }
+    });
+  } else {
+    Api.sendMessage({
+      chat_id: target_chat,
+      text: already_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: already_buttons }
+    });
+  }
   return;
 }
 
 var ch_disp = giveaway.channel_display || giveaway.channel || "Channel";
 var full_name = (user.first_name || "User") + (user.last_name ? (" " + user.last_name) : "");
 var uname = user.username ? ("@" + user.username) : "No username";
+var prize_line = (giveaway.title || giveaway.prize) ? ("🏆 <b>Prize:</b> " + (giveaway.title || giveaway.prize) + "\n") : "";
 
-// Action = JOIN (Register participant and post to channel)
+// Action = JOIN (Fresh first-time participant entry)
 if (action === "join") {
+  // Save user immediately to avoid duplicate clicks
   giveaway.users[uid] = full_name;
-  giveaway.vote_counts[uid] = giveaway.vote_counts[uid] || 0;
+  giveaway.vote_counts[uid] = 0;
+  giveaway.participants.push({
+    id: uid,
+    name: full_name,
+    username: user.username || null,
+    joined_at: new Date().toISOString()
+  });
 
-  // Post participant message to channel
+  // Post participant message to channel ONCE
   var card_text = 
-    "<b>🎯 PARTICIPANT</b>\n\n" +
-    "<b>👤 Name:</b> " + full_name + "\n" +
-    "<b>🆔 ID:</b> <code>" + uid + "</code>\n" +
-    "<b>📍 Username:</b> " + uname + "\n\n" +
-    "<i>Vote karne ke liye neeche button dabao!</i>";
+    "🎯 <b>NEW PARTICIPANT JOINED!</b>\n\n" +
+    prize_line +
+    "👤 <b>Name:</b> " + full_name + "\n" +
+    "🆔 <b>ID:</b> <code>" + uid + "</code>\n" +
+    "📍 <b>Username:</b> " + uname + "\n\n" +
+    "<i>Vote karne ke liye neeche button dabao!</i> 👇";
 
   var card_buttons = [
-    [{ text: "Vote - " + (giveaway.vote_counts[uid] || 0), callback_data: "vote " + gid + " " + uid, style: "success" }]
+    [{ text: "Vote - 0", callback_data: "vote " + gid + " " + uid, style: "success" }]
   ];
 
   Api.sendMessage({
@@ -141,26 +169,41 @@ if (action === "join") {
   User.setProperty("giveaways_joined", j_cnt + 1, "integer");
 
   var reg_text = 
-    "✅ <b>Registration Successful!</b>\n\n" +
-    full_name + "\n" +
-    "<code>" + uid + "</code>\n\n" +
-    "<i>Channel me tumhara voting message post ho gaya.</i>";
+    "🎉 <b>Registration Successful!</b>\n\n" +
+    "Aap contest me successfully enter ho gaye hain!\n\n" +
+    "👤 <b>Name:</b> " + full_name + "\n" +
+    "🆔 <b>ID:</b> <code>" + uid + "</code>\n\n" +
+    "✅ <i>Channel me aapka voting message post ho gaya hai. Ab aap apne friends ko channel se vote karne ke liye bol sakte hain!</i>";
 
-  Api.sendMessage({
-    chat_id: target_chat,
-    text: reg_text,
-    parse_mode: "HTML"
-  });
+  var reg_buttons = [
+    [{ text: "📈 My Stats", callback_data: "my_stats", style: "primary" }],
+    [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
+  ];
+
+  if (request && request.callback_query && request.callback_query.message) {
+    Api.editMessageText({
+      chat_id: request.callback_query.message.chat.id,
+      message_id: request.callback_query.message.message_id,
+      text: reg_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: reg_buttons }
+    });
+  } else {
+    Api.sendMessage({
+      chat_id: target_chat,
+      text: reg_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: reg_buttons }
+    });
+  }
   return;
 }
 
-// Default Landing Screen for Giveaway Link (Matching Python Bot)
+// Default Landing Screen for Giveaway Link (First time visitor)
 var ch_raw = giveaway.channel || "";
 var ch_url = ch_raw.indexOf("@") === 0 ? ("https://t.me/" + ch_raw.replace("@", "")) : ("https://t.me/" + BOT_USERNAME + "?startchannel=true");
-
 var count = Object.keys(giveaway.users).length;
 
-var prize_line = (giveaway.title || giveaway.prize) ? ("🏆 <b>Prize:</b> " + (giveaway.title || giveaway.prize) + "\n") : "";
 var landing_text = 
   "<b>🎁 EXCLUSIVE GIVEAWAY</b>\n\n" +
   "<b>Hosted By:</b> " + ch_disp + "\n" +
@@ -173,9 +216,19 @@ var landing_buttons = [
   [{ text: "JOIN GIVEAWAY", callback_data: "join_giveaway join " + gid, style: "success" }]
 ];
 
-Api.sendMessage({
-  chat_id: target_chat,
-  text: landing_text,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: landing_buttons }
-});
+if (request && request.callback_query && request.callback_query.message) {
+  Api.editMessageText({
+    chat_id: request.callback_query.message.chat.id,
+    message_id: request.callback_query.message.message_id,
+    text: landing_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: landing_buttons }
+  });
+} else {
+  Api.sendMessage({
+    chat_id: target_chat,
+    text: landing_text,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: landing_buttons }
+  });
+}
