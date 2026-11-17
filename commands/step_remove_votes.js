@@ -64,7 +64,19 @@ if (!giveaway) {
 giveaway.users = giveaway.users || {};
 giveaway.vote_counts = giveaway.vote_counts || {};
 
-var old = giveaway.vote_counts[target_uid] || 0;
+// If target_uid is username (starts with @ or matches participant username), resolve to numeric ID
+if (giveaway.participants && Array.isArray(giveaway.participants)) {
+  var clean_target = target_uid.replace("@", "").toLowerCase();
+  for (var i = 0; i < giveaway.participants.length; i++) {
+    var p = giveaway.participants[i];
+    if (p && p.username && p.username.toLowerCase() === clean_target) {
+      target_uid = String(p.id);
+      break;
+    }
+  }
+}
+
+var old = giveaway.vote_counts[target_uid] || giveaway.vote_counts[String(target_uid)] || 0;
 giveaway.vote_counts[target_uid] = Math.max(0, old - votes);
 var new_votes = giveaway.vote_counts[target_uid];
 

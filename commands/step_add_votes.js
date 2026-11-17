@@ -64,11 +64,23 @@ if (!giveaway) {
 giveaway.users = giveaway.users || {};
 giveaway.vote_counts = giveaway.vote_counts || {};
 
+// If target_uid is username (starts with @ or matches participant username), resolve to numeric ID
+if (giveaway.participants && Array.isArray(giveaway.participants)) {
+  var clean_target = target_uid.replace("@", "").toLowerCase();
+  for (var i = 0; i < giveaway.participants.length; i++) {
+    var p = giveaway.participants[i];
+    if (p && p.username && p.username.toLowerCase() === clean_target) {
+      target_uid = String(p.id);
+      break;
+    }
+  }
+}
+
 // Verify participant exists in giveaway
-var user_exists = !!(giveaway.users[target_uid]);
+var user_exists = !!(giveaway.users[target_uid] || giveaway.users[String(target_uid)]);
 if (!user_exists && giveaway.participants) {
   for (var i = 0; i < giveaway.participants.length; i++) {
-    if (giveaway.participants[i].id == target_uid) {
+    if (giveaway.participants[i].id == target_uid || String(giveaway.participants[i].id) === String(target_uid)) {
       user_exists = true;
       break;
     }

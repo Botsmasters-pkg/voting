@@ -36,6 +36,18 @@ if (!gid && user) {
   }
 }
 
+// Fallback: Extract gid and participant_uid directly from the Telegram message button callback_data
+if ((!gid || !participant_uid) && options && options.result && options.result.reply_markup && options.result.reply_markup.inline_keyboard) {
+  try {
+    var cb = options.result.reply_markup.inline_keyboard[0][0].callback_data;
+    if (cb && cb.indexOf("vote ") === 0) {
+      var parts = cb.replace("vote ", "").trim().split(/\s+/);
+      gid = parts[0];
+      participant_uid = parts[1];
+    }
+  } catch (e) {}
+}
+
 if (options && options.result && options.result.message_id && gid && participant_uid) {
   var all_giveaways = getPropJson("all_giveaways", {});
   var giveaway = all_giveaways[gid];
