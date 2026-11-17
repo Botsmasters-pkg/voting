@@ -4,17 +4,6 @@
   need_reply: false
 CMD*/
 
-function answer(msg, alert) {
-  var cb_id = (request && request.callback_query) ? request.callback_query.id : (request ? request.id : null);
-  if (cb_id) {
-    Api.answerCallbackQuery({
-      callback_query_id: cb_id,
-      text: msg || "",
-      show_alert: !!alert
-    });
-  }
-}
-
 function getPropJson(name, default_val) {
   var val = Bot.getProperty(name);
   if (!val) return default_val;
@@ -31,13 +20,38 @@ var status = member ? member.status : "";
 var raw_params = (params || "").trim().split(/\s+/);
 var gid = raw_params[0];
 var participant_id = raw_params[1];
-var voter_id = user.telegramid;
+var voter_id = raw_params[2];
+var cb_chat_id = (raw_params[3] && raw_params[3] !== "none") ? raw_params[3] : null;
+var cb_message_id = (raw_params[4] && raw_params[4] !== "none") ? raw_params[4] : null;
+var cb_id = (raw_params[5] && raw_params[5] !== "none") ? raw_params[5] : null;
+
+if (!voter_id && user) {
+  voter_id = user.telegramid;
+}
 
 if (!gid || !participant_id) {
-  var pctx = getPropJson("pending_vote_context_" + voter_id, null);
+  var pctx = voter_id ? getPropJson("pending_vote_context_" + voter_id, null) : null;
   if (pctx) {
     gid = pctx.gid;
     participant_id = pctx.target_uid;
+    if (!voter_id) voter_id = pctx.voter_id;
+    if (!cb_chat_id) cb_chat_id = (pctx.cb_chat_id !== "none") ? pctx.cb_chat_id : null;
+    if (!cb_message_id) cb_message_id = (pctx.cb_message_id !== "none") ? pctx.cb_message_id : null;
+    if (!cb_id) cb_id = (pctx.cb_id !== "none") ? pctx.cb_id : null;
+  }
+}
+
+function answerCb(msg, alert) {
+  var target_id = cb_id;
+  if (!target_id && request && request.callback_query) {
+    target_id = request.callback_query.id;
+  }
+  if (target_id) {
+    Api.answerCallbackQuery({
+      callback_query_id: target_id,
+      text: msg || "",
+      show_alert: !!alert
+    });
   }
 }
 
@@ -45,7 +59,7 @@ var all_giveaways = getPropJson("all_giveaways", {});
 var giveaway = all_giveaways[gid];
 
 if (!giveaway) {
-  answer("❌ Contest data nahi mila.", true);
+  answerCb("❌ Contest data nahi mila.", true);
   return;
 }
 
@@ -53,29 +67,31 @@ var is_member = (status === "creator" || status === "administrator" || status ==
 
 // If user is NOT a channel member, enforce membership requirement with frictionless 1-tap buttons
 if (!is_member) {
-  answer("⚠️ Vote count karane ke liye pehle channel join karein!", true);
+  answerCb("⚠️ Vote count karane ke liye pehle channel join karein!", true);
 
-  var ch_raw = giveaway.channel || "";
-  var ch_link = ch_raw.startsWith("@") ? ("https://t.me/" + ch_raw.replace("@", "")) : ("https://t.me/" + Bot.getProperty("bot_username", "bot") + "?startchannel=true");
+  if (voter_id) {
+    var ch_raw = giveaway.channel || "";
+    var ch_link = ch_raw.startsWith("@") ? ("https://t.me/" + ch_raw.replace("@", "")) : ("https://t.me/" + Bot.getProperty("bot_username", "bot") + "?startchannel=true");
 
-  var join_prompt_text = 
-    "⚠️ <b>CHANNEL JOIN KARNA ZAROORI HAI!</b> ⚠️\n\n" +
-    "Aapka vote tabhi count hoga jab aap pehle contest channel join karenge.\n\n" +
-    "👉 <b>Step 1:</b> Neeche diye gaye <b>📢 Step 1: Join Channel</b> button par click karke channel join karein.\n" +
-    "👉 <b>Step 2:</b> Join karne ke baad turant <b>🗳 Step 2: Cast Vote Now</b> button dabayein!\n\n" +
-    "✨ <i>Ek baar vote record ho gaya, uske baad agar aap channel chhodte bhi hain to bhi aapka vote safe rahega!</i>";
+    var join_prompt_text = 
+      "⚠️ <b>CHANNEL JOIN KARNA ZAROORI HAI!</b> ⚠️\n\n" +
+      "Aapka vote tabhi count hoga jab aap pehle contest channel join karenge.\n\n" +
+      "👉 <b>Step 1:</b> Neeche diye gaye <b>📢 Step 1: Join Channel</b> button par click karke channel join karein.\n" +
+      "👉 <b>Step 2:</b> Join karne ke baad turant <b>🗳 Step 2: Cast Vote Now</b> button dabayein!\n\n" +
+      "✨ <i>Ek baar vote record ho gaya, uske baad agar aap channel chhodte bhi hain to bhi aapka vote safe rahega!</i>";
 
-  var prompt_buttons = [
-    [{ text: "📢 Step 1: Join Channel", url: ch_link, style: "primary" }],
-    [{ text: "🗳 Step 2: Cast Vote Now", callback_data: "vote " + gid + " " + participant_id, style: "success" }]
-  ];
+    var prompt_buttons = [
+      [{ text: "📢 Step 1: Join Channel", url: ch_link, style: "primary" }],
+      [{ text: "🗳 Step 2: Cast Vote Now", callback_data: "vote " + gid + " " + participant_id, style: "success" }]
+    ];
 
-  Api.sendMessage({
-    chat_id: voter_id,
-    text: join_prompt_text,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: prompt_buttons }
-  });
+    Api.sendMessage({
+      chat_id: voter_id,
+      text: join_prompt_text,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: prompt_buttons }
+    });
+  }
   return;
 }
 
@@ -87,7 +103,7 @@ giveaway.voted_users[participant_id] = giveaway.voted_users[participant_id] || [
 
 var vote_key = voter_id + "_" + participant_id;
 if (giveaway.vote_records[vote_key] || giveaway.voted_users[participant_id].indexOf(voter_id) !== -1) {
-  answer("⚠️ Aap pehle hi vote de chuke hain!", true);
+  answerCb("⚠️ Aap pehle hi vote de chuke hain!", true);
   return;
 }
 
@@ -100,16 +116,15 @@ giveaway.vote_records[vote_key] = {
   voted_at: new Date().toISOString()
 };
 
-// If clicked directly in channel, capture message ID & channel chat ID
-if (request && request.callback_query && request.callback_query.message) {
-  var cb_chat = request.callback_query.message.chat;
-  if (cb_chat && (cb_chat.type === "channel" || cb_chat.type === "supergroup" || String(cb_chat.id).startsWith("-100"))) {
-    giveaway.vote_messages = giveaway.vote_messages || {};
-    giveaway.vote_messages[participant_id] = request.callback_query.message.message_id;
-    giveaway.vote_messages[String(participant_id)] = request.callback_query.message.message_id;
-    giveaway.vote_messages[Number(participant_id)] = request.callback_query.message.message_id;
-    giveaway.channel_chat_id = cb_chat.id;
-  }
+// Save channel and message identifiers
+giveaway.vote_messages = giveaway.vote_messages || {};
+if (cb_message_id) {
+  giveaway.vote_messages[participant_id] = cb_message_id;
+  giveaway.vote_messages[String(participant_id)] = cb_message_id;
+  giveaway.vote_messages[Number(participant_id)] = cb_message_id;
+}
+if (cb_chat_id && (cb_chat_id.startsWith("-100") || cb_chat_id.startsWith("@"))) {
+  giveaway.channel_chat_id = cb_chat_id;
 }
 
 var total_votes_all = Bot.getProperty("total_votes_count", 0);
@@ -121,11 +136,11 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 var votes_given = User.getProperty("votes_given", 0);
 User.setProperty("votes_given", votes_given + 1, "integer");
 
-// 1. Update the message where user clicked (if in channel or private chat)
-if (request && request.callback_query && request.callback_query.message) {
-  var chat_id = request.callback_query.message.chat.id;
-  var message_id = request.callback_query.message.message_id;
+// UPDATE BUTTON IN CHANNEL IN REAL-TIME
+var target_channel = cb_chat_id || giveaway.channel_chat_id || giveaway.channel;
+var target_mid = cb_message_id || giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)];
 
+if (target_channel && target_mid) {
   var updated_button = [
     [
       { text: "Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
@@ -133,28 +148,11 @@ if (request && request.callback_query && request.callback_query.message) {
   ];
 
   Api.editMessageReplyMarkup({
-    chat_id: chat_id,
-    message_id: message_id,
+    chat_id: target_channel,
+    message_id: target_mid,
     reply_markup: { inline_keyboard: updated_button },
     on_error: "on_channel_post_error"
   });
 }
 
-// 2. Also update the channel card button in real-time (especially if voter voted from referral link in PM)
-var target_channel = giveaway.channel_chat_id || giveaway.channel;
-var ch_mid = giveaway.vote_messages ? (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)] || giveaway.vote_messages[Number(participant_id)]) : null;
-
-if (ch_mid && target_channel) {
-  Api.editMessageReplyMarkup({
-    chat_id: target_channel,
-    message_id: ch_mid,
-    reply_markup: {
-      inline_keyboard: [[
-        { text: "Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
-      ]]
-    },
-    on_error: "on_channel_post_error"
-  });
-}
-
-answer("🎉 Vote recorded! Total: " + current_votes, false);
+answerCb("🎉 Vote recorded! Total: " + current_votes, false);

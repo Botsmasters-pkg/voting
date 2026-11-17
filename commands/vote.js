@@ -53,8 +53,29 @@ giveaway.vote_counts = giveaway.vote_counts || {};
 giveaway.users = giveaway.users || {};
 giveaway.vote_messages = giveaway.vote_messages || {};
 
+var cb_chat_id = "";
+var cb_message_id = "";
+var cb_id = "";
+
+if (request && request.callback_query) {
+  cb_id = request.callback_query.id || "";
+  if (request.callback_query.message) {
+    var cb_msg = request.callback_query.message;
+    cb_message_id = String(cb_msg.message_id || "");
+    if (cb_msg.chat && cb_msg.chat.id) {
+      cb_chat_id = String(cb_msg.chat.id);
+    }
+  }
+}
+
+if (!cb_chat_id) {
+  cb_chat_id = String(giveaway.channel_chat_id || giveaway.channel || "");
+}
+if (!cb_message_id && giveaway.vote_messages) {
+  cb_message_id = String(giveaway.vote_messages[target_uid] || giveaway.vote_messages[String(target_uid)] || "");
+}
+
 // CRITICAL: Cache message_id IMMEDIATELY whenever any callback comes from the channel!
-// Even if voter is participant themselves, banned, or already voted, the card message_id MUST be saved!
 if (request && request.callback_query && request.callback_query.message) {
   var cb_msg = request.callback_query.message;
   giveaway.vote_messages[target_uid] = cb_msg.message_id;
@@ -65,19 +86,6 @@ if (request && request.callback_query && request.callback_query.message) {
   }
   all_giveaways[gid] = giveaway;
   Bot.setProperty("all_giveaways", all_giveaways, "json");
-
-  // Sync button text to current vote count in database right away
-  var cur_v = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
-  Api.editMessageReplyMarkup({
-    chat_id: cb_msg.chat.id,
-    message_id: cb_msg.message_id,
-    reply_markup: {
-      inline_keyboard: [[
-        { text: "Vote - " + cur_v, callback_data: "vote " + gid + " " + target_uid, style: "success" }
-      ]]
-    },
-    on_error: "on_channel_post_error"
-  });
 }
 
 // Guard 0: Check if voter is banned
@@ -89,6 +97,20 @@ if (banned_users && (banned_users.indexOf(voter_id) !== -1 || banned_users.index
 
 // Guard 1: Cannot vote for oneself (Matching Python Bot)
 if (String(voter_id) === String(target_uid)) {
+  // Sync button to latest database vote count on tap
+  if (cb_chat_id && cb_message_id) {
+    var cur_v1 = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
+    Api.editMessageReplyMarkup({
+      chat_id: cb_chat_id,
+      message_id: cb_message_id,
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Vote - " + cur_v1, callback_data: "vote " + gid + " " + target_uid, style: "success" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answer("❌ Aap khud ko vote nahi kar sakte!", true);
   return;
 }
@@ -102,7 +124,21 @@ if (giveaway.ended || giveaway.status === "ended") {
 var vote_key = voter_id + "_" + target_uid;
 
 // Guard 2: Already voted for this participant (Matching Python Bot)
-if (giveaway.vote_records[vote_key]) {
+if (giveaway.vote_records[vote_key] || (giveaway.voted_users && giveaway.voted_users[target_uid] && giveaway.voted_users[target_uid].indexOf(voter_id) !== -1)) {
+  // Sync button to latest database vote count on tap
+  if (cb_chat_id && cb_message_id) {
+    var cur_v2 = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
+    Api.editMessageReplyMarkup({
+      chat_id: cb_chat_id,
+      message_id: cb_message_id,
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Vote - " + cur_v2, callback_data: "vote " + gid + " " + target_uid, style: "success" }
+        ]]
+      },
+      on_error: "on_channel_post_error"
+    });
+  }
   answer("⚠️ Aap is user ko already vote kar chuke ho!", true);
   return;
 }
@@ -116,17 +152,26 @@ if (giveaway.users[voter_id] && giveaway.users[target_uid]) {
 // Channel Membership Check
 var target_channel = giveaway.channel_chat_id || giveaway.channel;
 if (target_channel) {
+  var safe_chat = cb_chat_id ? cb_chat_id : "none";
+  var safe_mid = cb_message_id ? cb_message_id : "none";
+  var safe_cb = cb_id ? cb_id : "none";
+
   Bot.setProperty("pending_vote_context_" + voter_id, {
     gid: gid,
     target_uid: target_uid,
-    cb_id: (request && request.callback_query ? request.callback_query.id : (request ? request.id : null))
+    voter_id: voter_id,
+    cb_chat_id: safe_chat,
+    cb_message_id: safe_mid,
+    cb_id: safe_cb
   }, "json");
+
+  var cb_args = gid + " " + target_uid + " " + voter_id + " " + safe_chat + " " + safe_mid + " " + safe_cb;
 
   Api.getChatMember({
     chat_id: target_channel,
     user_id: voter_id,
-    on_result: "on_vote_member_check " + gid + " " + target_uid,
-    on_error: "on_vote_member_error " + gid + " " + target_uid
+    on_result: "on_vote_member_check " + cb_args,
+    on_error: "on_vote_member_error " + cb_args
   });
   return;
 }
@@ -147,18 +192,18 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 var v_given = User.getProperty("votes_given", 0);
 User.setProperty("votes_given", v_given + 1, "integer");
 
-answer("🎉 Vote recorded!", false);
+answer("🎉 Vote recorded! Total: " + new_votes, false);
 
 // Update button in channel
-if (request && request.callback_query && request.callback_query.message) {
+if (cb_chat_id && cb_message_id) {
   var new_markup = {
     inline_keyboard: [[
       { text: "Vote - " + new_votes, callback_data: "vote " + gid + " " + target_uid, style: "success" }
     ]]
   };
   Api.editMessageReplyMarkup({
-    chat_id: request.callback_query.message.chat.id,
-    message_id: request.callback_query.message.message_id,
+    chat_id: cb_chat_id,
+    message_id: cb_message_id,
     reply_markup: new_markup,
     on_error: "on_channel_post_error"
   });
