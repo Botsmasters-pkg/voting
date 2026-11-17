@@ -1,18 +1,48 @@
 /*CMD
   command: my_giveaways
-  help: List user created contests with primary styled buttons
+  help: List user created contests with clickable buttons to manage each contest
   need_reply: false
 CMD*/
 
+var OWNER_ID = 8710308658;
+
+function getPropJson(name, default_val) {
+  var val = Bot.getProperty(name);
+  if (!val) return default_val;
+  if (typeof val === "object") return val;
+  if (typeof val === "string") {
+    try { return JSON.parse(val) || default_val; } catch (e) { return default_val; }
+  }
+  return default_val;
+}
+
+var all_giveaways = getPropJson("all_giveaways", {});
 var my_list = User.getProperty("my_giveaway_ids", []);
-var all_giveaways = Bot.getProperty("all_giveaways", {});
+var uid = user.telegramid;
 var target_chat = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-if (!my_list || my_list.length === 0) {
+// Gather contest list: Admin sees all, normal user sees their own
+var contest_keys = [];
+
+if (uid == OWNER_ID) {
+  for (var k in all_giveaways) {
+    contest_keys.push(k);
+  }
+} else {
+  if (Array.isArray(my_list)) {
+    for (var i = 0; i < my_list.length; i++) {
+      if (all_giveaways[my_list[i]]) {
+        contest_keys.push(my_list[i]);
+      }
+    }
+  }
+}
+
+if (contest_keys.length === 0) {
   var empty_text = 
-    "📊 <b>My Contests</b>\n\n" +
+    "📊 <b>MANAGE CONTESTS</b> 📊\n\n" +
     "Aapne abhi tak koi bhi Contest create nahi kiya hai.\n\n" +
-    "Naya contest shuru karne ke liye neeche button dabayein!";
+    "Naya contest shuru karne ke liye neeche <b>➕ Create Contest</b> dabayein!";
   
   var empty_buttons = [
     [{ text: "➕ Create Contest", callback_data: "create_giveaway", style: "success" }],
@@ -38,32 +68,31 @@ if (!my_list || my_list.length === 0) {
   return;
 }
 
-var text = "📊 <b>Your Created Contests:</b>\n\n";
+var text = 
+  "📊 <b>MANAGE YOUR CONTESTS</b> 📊\n\n" +
+  "Total Contests: <code>" + contest_keys.length + "</code>\n\n" +
+  "<i>Kisi bhi contest par click karein use manage karne, votes add/cut karne, leaderboard dekhne, ya end karne ke liye 👇</i>";
 
-for (var i = 0; i < my_list.length; i++) {
-  var gid = my_list[i];
+var buttons = [];
+
+for (var j = 0; j < contest_keys.length; j++) {
+  var gid = contest_keys[j];
   var g = all_giveaways[gid];
   if (g) {
-    var p_count = g.participants ? g.participants.length : 0;
-    var total_v = 0;
-    if (g.vote_counts) {
-      for (var k in g.vote_counts) {
-        total_v += g.vote_counts[k];
-      }
-    }
-    text += "🔹 <b>" + g.title + "</b>\n" +
-            "   • ID: <code>" + gid + "</code>\n" +
-            "   • Status: <b>" + (g.status || "active").toUpperCase() + "</b>\n" +
-            "   • Channel: <code>" + g.channel + "</code>\n" +
-            "   • Participants: <b>" + p_count + "</b>\n" +
-            "   • Total Votes: <b>" + total_v + "</b>\n\n";
+    var status_badge = (g.status === "ended") ? "🔴 " : "🟢 ";
+    var ch_name = g.channel || "Channel";
+    var g_title = g.title || "Contest";
+    var btn_label = status_badge + ch_name + " • " + (g_title.length > 20 ? (g_title.substring(0, 18) + "..") : g_title);
+    buttons.push([
+      { text: btn_label, callback_data: "manage_giveaway " + gid, style: "primary" }
+    ]);
   }
 }
 
-var buttons = [
-  [{ text: "➕ Create Another", callback_data: "create_giveaway", style: "success" }],
-  [{ text: "🔙 Main Menu", callback_data: "/start", style: "primary" }]
-];
+buttons.push([
+  { text: "➕ Create New", callback_data: "create_giveaway", style: "success" },
+  { text: "🔙 Main Menu", callback_data: "/start", style: "primary" }
+]);
 
 if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageText({
