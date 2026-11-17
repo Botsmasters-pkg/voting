@@ -103,10 +103,11 @@ giveaway.vote_records[vote_key] = {
 // If clicked directly in channel, capture message ID & channel chat ID
 if (request && request.callback_query && request.callback_query.message) {
   var cb_chat = request.callback_query.message.chat;
-  if (cb_chat && (cb_chat.type === "channel" || cb_chat.type === "supergroup")) {
+  if (cb_chat && (cb_chat.type === "channel" || cb_chat.type === "supergroup" || String(cb_chat.id).startsWith("-100"))) {
     giveaway.vote_messages = giveaway.vote_messages || {};
     giveaway.vote_messages[participant_id] = request.callback_query.message.message_id;
     giveaway.vote_messages[String(participant_id)] = request.callback_query.message.message_id;
+    giveaway.vote_messages[Number(participant_id)] = request.callback_query.message.message_id;
     giveaway.channel_chat_id = cb_chat.id;
   }
 }
@@ -134,13 +135,14 @@ if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageReplyMarkup({
     chat_id: chat_id,
     message_id: message_id,
-    reply_markup: { inline_keyboard: updated_button }
+    reply_markup: { inline_keyboard: updated_button },
+    on_error: "on_channel_post_error"
   });
 }
 
 // 2. Also update the channel card button in real-time (especially if voter voted from referral link in PM)
 var target_channel = giveaway.channel_chat_id || giveaway.channel;
-var ch_mid = giveaway.vote_messages ? (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)]) : null;
+var ch_mid = giveaway.vote_messages ? (giveaway.vote_messages[participant_id] || giveaway.vote_messages[String(participant_id)] || giveaway.vote_messages[Number(participant_id)]) : null;
 
 if (ch_mid && target_channel) {
   Api.editMessageReplyMarkup({
@@ -150,7 +152,8 @@ if (ch_mid && target_channel) {
       inline_keyboard: [[
         { text: "Vote - " + current_votes, callback_data: "vote " + gid + " " + participant_id, style: "success" }
       ]]
-    }
+    },
+    on_error: "on_channel_post_error"
   });
 }
 

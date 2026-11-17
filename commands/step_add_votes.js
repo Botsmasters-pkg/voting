@@ -85,6 +85,7 @@ Bot.setProperty("all_giveaways", all_giveaways, "json");
 var target_channel = giveaway.channel_chat_id || giveaway.channel;
 var mid = giveaway.vote_messages ? (giveaway.vote_messages[target_uid] || giveaway.vote_messages[String(target_uid)] || giveaway.vote_messages[Number(target_uid)]) : null;
 
+var channel_synced = false;
 if (mid && target_channel) {
   var new_markup = {
     inline_keyboard: [[
@@ -94,11 +95,16 @@ if (mid && target_channel) {
   Api.editMessageReplyMarkup({
     chat_id: target_channel,
     message_id: mid,
-    reply_markup: new_markup
+    reply_markup: new_markup,
+    on_error: "on_channel_post_error"
   });
+  channel_synced = true;
 }
 
-var reply_text = "💎 Added +" + votes + " votes!\n<b>New Total:</b> " + new_votes;
+var reply_text = 
+  "💎 <b>Added +" + votes + " votes!</b>\n" +
+  "<b>New Total:</b> " + new_votes + "\n\n" +
+  (channel_synced ? "✅ <i>Channel button updated in real-time!</i>" : "ℹ️ <i>Channel button update queued (channel message ID link hone par auto-sync ho jayega).</i>");
 var buttons = [
   [{ text: "BACK", callback_data: "manage_giveaway " + gid, style: "primary" }]
 ];

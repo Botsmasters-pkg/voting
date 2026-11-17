@@ -170,9 +170,12 @@ if (action === "join") {
     text: card_text,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: card_buttons },
-    on_result: "on_participant_post_saved " + gid + " " + uid,
+    on_result: "on_participant_post_saved",
+    bb_options: { gid: gid, uid: uid },
     on_error: "on_channel_post_error"
   });
+
+  Bot.setProperty("pending_post_saved_" + uid, { gid: gid, uid: uid, ch: giveaway.channel }, "json");
 
   all_giveaways[gid] = giveaway;
   Bot.setProperty("all_giveaways", all_giveaways, "json");

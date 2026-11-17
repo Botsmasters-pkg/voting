@@ -90,7 +90,8 @@ var buttons = [
     { text: "REMOVE VOTES", callback_data: "cmd_remove_votes " + gid, style: "danger" }
   ],
   [
-    { text: "LEADERBOARD", callback_data: "cmd_leaderboard " + gid, style: "primary" }
+    { text: "LEADERBOARD", callback_data: "cmd_leaderboard " + gid, style: "primary" },
+    { text: "🔄 SYNC CHANNEL", callback_data: "cmd_sync_giveaway " + gid, style: "success" }
   ],
   [
     { text: "END GIVEAWAY", callback_data: "cmd_end_giveaway " + gid, style: "danger" }

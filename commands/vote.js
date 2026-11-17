@@ -40,6 +40,46 @@ var gid = parts[0].trim();
 var target_uid = parts[1].trim();
 var voter_id = user.telegramid;
 
+var all_giveaways = getPropJson("all_giveaways", {});
+var giveaway = all_giveaways[gid];
+
+if (!giveaway) {
+  answer("❌ Contest exist nahi karta ya delete ho chuka hai.", true);
+  return;
+}
+
+giveaway.vote_records = giveaway.vote_records || {};
+giveaway.vote_counts = giveaway.vote_counts || {};
+giveaway.users = giveaway.users || {};
+giveaway.vote_messages = giveaway.vote_messages || {};
+
+// CRITICAL: Cache message_id IMMEDIATELY whenever any callback comes from the channel!
+// Even if voter is participant themselves, banned, or already voted, the card message_id MUST be saved!
+if (request && request.callback_query && request.callback_query.message) {
+  var cb_msg = request.callback_query.message;
+  giveaway.vote_messages[target_uid] = cb_msg.message_id;
+  giveaway.vote_messages[String(target_uid)] = cb_msg.message_id;
+  giveaway.vote_messages[Number(target_uid)] = cb_msg.message_id;
+  if (cb_msg.chat && cb_msg.chat.id) {
+    giveaway.channel_chat_id = cb_msg.chat.id;
+  }
+  all_giveaways[gid] = giveaway;
+  Bot.setProperty("all_giveaways", all_giveaways, "json");
+
+  // Sync button text to current vote count in database right away
+  var cur_v = (giveaway.vote_counts && giveaway.vote_counts[target_uid]) ? giveaway.vote_counts[target_uid] : 0;
+  Api.editMessageReplyMarkup({
+    chat_id: cb_msg.chat.id,
+    message_id: cb_msg.message_id,
+    reply_markup: {
+      inline_keyboard: [[
+        { text: "Vote - " + cur_v, callback_data: "vote " + gid + " " + target_uid, style: "success" }
+      ]]
+    },
+    on_error: "on_channel_post_error"
+  });
+}
+
 // Guard 0: Check if voter is banned
 var banned_users = getPropJson("banned_users", []);
 if (banned_users && (banned_users.indexOf(voter_id) !== -1 || banned_users.indexOf(Number(voter_id)) !== -1)) {
@@ -53,22 +93,11 @@ if (String(voter_id) === String(target_uid)) {
   return;
 }
 
-var all_giveaways = getPropJson("all_giveaways", {});
-var giveaway = all_giveaways[gid];
-
-if (!giveaway) {
-  answer("❌ Contest exist nahi karta ya delete ho chuka hai.", true);
-  return;
-}
-
+// Guard 1.5: Contest ended
 if (giveaway.ended || giveaway.status === "ended") {
   answer("🛑 Contest khatam ho chuka hai.", true);
   return;
 }
-
-giveaway.vote_records = giveaway.vote_records || {};
-giveaway.vote_counts = giveaway.vote_counts || {};
-giveaway.users = giveaway.users || {};
 
 var vote_key = voter_id + "_" + target_uid;
 
@@ -85,7 +114,7 @@ if (giveaway.users[voter_id] && giveaway.users[target_uid]) {
 }
 
 // Channel Membership Check
-var target_channel = giveaway.channel;
+var target_channel = giveaway.channel_chat_id || giveaway.channel;
 if (target_channel) {
   Bot.setProperty("pending_vote_context_" + voter_id, {
     gid: gid,
@@ -130,6 +159,7 @@ if (request && request.callback_query && request.callback_query.message) {
   Api.editMessageReplyMarkup({
     chat_id: request.callback_query.message.chat.id,
     message_id: request.callback_query.message.message_id,
-    reply_markup: new_markup
+    reply_markup: new_markup,
+    on_error: "on_channel_post_error"
   });
 }

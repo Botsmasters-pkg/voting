@@ -14,9 +14,27 @@ function getPropJson(name, default_val) {
   return default_val;
 }
 
-var raw_params = (params || "").trim().split(/\s+/);
-var gid = raw_params[0];
-var participant_uid = raw_params[1];
+var gid = null;
+var participant_uid = null;
+
+if (options && options.bb_options) {
+  gid = options.bb_options.gid;
+  participant_uid = options.bb_options.uid;
+}
+
+if (!gid && params) {
+  var raw_params = (params || "").trim().split(/\s+/);
+  gid = raw_params[0];
+  participant_uid = raw_params[1];
+}
+
+if (!gid && user) {
+  var p = getPropJson("pending_post_saved_" + user.telegramid, null);
+  if (p) {
+    gid = p.gid;
+    participant_uid = p.uid;
+  }
+}
 
 if (options && options.result && options.result.message_id && gid && participant_uid) {
   var all_giveaways = getPropJson("all_giveaways", {});

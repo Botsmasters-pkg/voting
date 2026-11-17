@@ -111,6 +111,10 @@ if (request && request.callback_query && request.callback_query.data) {
     Bot.run({ command: "cmd_leaderboard", params: data.replace("cmd_leaderboard ", "") });
     return;
   }
+  if (data.indexOf("cmd_sync_giveaway ") === 0) {
+    Bot.run({ command: "cmd_sync_giveaway", params: data.replace("cmd_sync_giveaway ", "") });
+    return;
+  }
   if (data.indexOf("cmd_end_giveaway ") === 0) {
     Bot.run({ command: "cmd_end_giveaway", params: data.replace("cmd_end_giveaway ", "") });
     return;
